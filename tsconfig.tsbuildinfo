@@ -1,0 +1,1 @@
+{"root":["./vite.config.ts","./src/app.tsx","./src/main.tsx","./src/config/api.ts","./src/pwa/registerserviceworker.ts","./src/shared/components/appshell.tsx","./src/shared/components/statusbadge.tsx","./src/shared/hooks/useapihealth.ts","./src/shared/hooks/usenetworkstatus.ts"],"errors":true,"version":"6.0.3"}
