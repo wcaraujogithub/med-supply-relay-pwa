@@ -8,6 +8,7 @@ export const API_BASE_URL =
 export const API_ENDPOINTS = {
   health: `${API_BASE_URL}/health`,
   matches: `${API_BASE_URL}/api/v1/matches`,
+  reservations: `${API_BASE_URL}/api/v1/reservations`,
   exportMatchesCsv: `${API_BASE_URL}/api/v1/export/matches.csv`,
   exportMatchesTxt: `${API_BASE_URL}/api/v1/export/matches.txt`,
   syncBatch: `${API_BASE_URL}/api/v1/sync/batch`
