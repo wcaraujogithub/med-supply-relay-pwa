@@ -1850,3 +1850,234 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+.operations-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.operations-hero {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 26rem),
+    rgba(15, 23, 42, 0.82);
+  box-shadow: var(--shadow);
+}
+
+.operations-hero h2 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 4rem);
+  letter-spacing: -0.06em;
+}
+
+.operations-hero p:not(.eyebrow) {
+  max-width: 760px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.operations-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.operations-tabs button {
+  min-height: 48px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 950;
+}
+
+.operations-tabs button.active {
+  border-color: rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.14);
+  color: #bae6fd;
+}
+
+.operations-filters-panel {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: rgba(15, 23, 42, 0.76);
+}
+
+.operations-filters {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 150px 150px 180px;
+  gap: 12px;
+  align-items: end;
+}
+
+.operations-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.operations-filters label span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.operations-filters input,
+.operations-filters select {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.92);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  padding: 12px 14px;
+}
+
+.operations-filter-actions {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.operations-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.operations-summary-grid div {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(30, 41, 59, 0.62);
+}
+
+.operations-summary-grid strong {
+  display: block;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.operations-summary-grid span {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.operations-list-header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.62);
+}
+
+.operations-list-header span {
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.operations-pagination {
+  display: flex;
+  gap: 10px;
+}
+
+.operations-matches-list {
+  padding-bottom: 30px;
+}
+
+.operations-history-panel,
+.operations-export-panel {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: rgba(15, 23, 42, 0.76);
+}
+
+.operations-export-panel h3,
+.operations-history-panel h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.operations-export-panel p {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.operations-export-note {
+  margin-top: 16px;
+}
+
+.active-reservations-panel--page {
+  margin: 0;
+}
+
+@media (max-width: 1100px) {
+  .operations-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .operations-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .operations-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .operations-hero {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .operations-hero .secondary-button {
+    width: 100%;
+  }
+
+  .operations-tabs,
+  .operations-filters,
+  .operations-filter-actions,
+  .operations-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .operations-list-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .operations-pagination {
+    flex-direction: column;
+  }
+
+  .operations-pagination .secondary-button {
+    width: 100%;
+  }
+}

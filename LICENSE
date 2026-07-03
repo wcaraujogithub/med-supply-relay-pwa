@@ -1,0 +1,74 @@
+﻿MedSupply Relay PWA - Humanitarian Open Source License Notice
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+Copyright (c) 2026 Wesley Cordeiro de Araujo.
+
+Project: MedSupply Relay - Emergency MVP
+Frontend Project: med-supply-relay-pwa
+Frontend Scope: React, Progressive Web App (PWA), Service Worker, offline-first user interface, local cache, background synchronization, queued requests, and related frontend assets.
+
+Author and Rights Holder:
+WESLEY CORDEIRO DE ARAUJO - ANALISTA DE SISTEMAS .NET CORE COM ENFASE EM ARQUITETURA DE PROJETOS
+LinkedIn: https://www.linkedin.com/in/aisentinelx/
+GitHub: https://github.com/wcaraujogithub
+
+Humanitarian Context:
+This frontend is part of "Projetos Humanitarios Open Source".
+It was created to support emergency response scenarios where hospitals, shelters, donors, medical teams, and affected communities may have unstable or unavailable internet access.
+
+The initial humanitarian motivation includes support for people affected by the earthquake crisis in Venezuela, where hospitals may be damaged and medical supplies may be distributed across shelters, donors, and support centers.
+
+Offline-First Purpose:
+This frontend may be implemented with React as a Progressive Web App (PWA) and may include a Service Worker, local browser storage, cached screens, queued requests, and background synchronization.
+
+The purpose is to allow shelters, donors, hospitals, and medical teams to continue recording medical supply offers and urgent demands while offline, and to synchronize the data with the MedSupply Relay backend when internet access returns.
+
+MVP User Flow:
+- Supply screen: shelters and donors register available medicines and supplies.
+- Demand screen: hospitals and medical teams register urgent needs.
+- Offline mode: users continue entering essential information without internet.
+- Sync mode: pending records are synchronized when connectivity is restored.
+- Matching result: the system shows simple matches between supply and demand.
+
+Acceptance Criterion:
+If Hospital Y needs Paracetamol
+And Shelter X has Paracetamol
+Then the system returns a simple match:
+"Shelter X has the Paracetamol that Hospital Y needs."
+
+License Grant:
+This frontend is free and open source software licensed under the GNU Affero General Public License version 3 or later (AGPL-3.0-or-later).
+
+You may use, study, copy, modify, distribute, and deploy this frontend under the terms of the AGPL-3.0-or-later.
+
+Important Protection of Authorship:
+Open source does not mean public domain.
+The original authorship, copyright notices, license notices, and attribution to Wesley Cordeiro de Araujo must be preserved in copies, forks, modified versions, public deployments, app builds, documentation, and redistributions, as required by the AGPL-3.0-or-later and applicable copyright law.
+
+No person, company, institution, team, or organization may falsely claim to be the original author of this frontend, remove the copyright notice, remove this license notice, or misrepresent the origin of the project.
+
+Network and PWA Source Code Requirement:
+Because this frontend is expected to operate as a web application and PWA, any modified version made available to users over a network must provide access to the corresponding source code under the same AGPL-3.0-or-later terms.
+
+This includes modified React code, Service Worker code, offline synchronization logic, cache strategies, local storage logic, UI flows, build scripts, and frontend configuration required to build and operate the modified version.
+
+Third-Party Dependencies:
+React, build tools, npm packages, browser APIs, icons, fonts, and other third-party dependencies remain governed by their own licenses.
+
+All third-party license notices must be preserved as required by their respective licenses.
+
+No Medical Warranty:
+This frontend is intended to support humanitarian logistics and information coordination. It is not a certified medical device, clinical decision system, emergency dispatch system, or regulatory compliance product.
+
+This software is provided "as is", without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, availability, accuracy, security, offline durability, data recovery, synchronization success, or suitability for emergency, medical, clinical, legal, regulatory, or commercial use.
+
+Data Responsibility:
+Offline data may depend on browser storage, device state, cache behavior, available disk space, user permissions, and later synchronization with backend services.
+
+Users and deployers are responsible for validating data, protecting sensitive information, handling conflicts, backing up critical records, and complying with applicable privacy, health, humanitarian, and data protection laws.
+
+Full License Text:
+The full legal text of the GNU Affero General Public License version 3 is available at:
+https://www.gnu.org/licenses/agpl-3.0.html
+
+If a copy of the full AGPL-3.0 license text is required for distribution, include it with this frontend or obtain it from the official GNU website above.

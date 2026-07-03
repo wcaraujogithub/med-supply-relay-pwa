@@ -5,11 +5,16 @@
 // } from './reservationTypes';
 
 // type ActiveReservationsPanelProps = {
-//   reservations: ReservationResponse[];
+//   activeReservations: ReservationResponse[];
+//   finalizedReservations: ReservationResponse[];
 //   isLoading: boolean;
+//   isHistoryLoading: boolean;
 //   error: string | null;
+//   historyError: string | null;
 //   canUseApi: boolean;
 //   onRefresh: () => Promise<void> | void;
+//   onRefreshHistory: () => Promise<void> | void;
+//   onExpireOld: () => Promise<void> | void;
 //   onChangeStatus: (
 //     reservation: ReservationResponse,
 //     action: ReservationAction
@@ -64,6 +69,41 @@
 //   return new Date(value).toLocaleString('pt-BR');
 // }
 
+// function minutesUntil(value: string): number {
+//   return Math.floor((new Date(value).getTime() - Date.now()) / 60000);
+// }
+
+// function getExpiryTone(reservation: ReservationResponse): string {
+//   const minutes = minutesUntil(reservation.reservedUntilUtc);
+
+//   if (minutes <= 0) {
+//     return 'expired-soon';
+//   }
+
+//   if (minutes <= 30) {
+//     return 'warning';
+//   }
+
+//   return 'normal';
+// }
+
+// function expiryLabel(reservation: ReservationResponse): string {
+//   const minutes = minutesUntil(reservation.reservedUntilUtc);
+
+//   if (minutes <= 0) {
+//     return 'Vencida';
+//   }
+
+//   if (minutes < 60) {
+//     return `Expira em ${minutes} min`;
+//   }
+
+//   const hours = Math.floor(minutes / 60);
+//   const rest = minutes % 60;
+
+//   return `Expira em ${hours}h${rest.toString().padStart(2, '0')}`;
+// }
+
 // function getActions(status: ReservationStatus): ReservationAction[] {
 //   switch (status) {
 //     case 'Pending':
@@ -94,37 +134,62 @@
 // }
 
 // export function ActiveReservationsPanel({
-//   reservations,
+//   activeReservations,
+//   finalizedReservations,
 //   isLoading,
+//   isHistoryLoading,
 //   error,
+//   historyError,
 //   canUseApi,
 //   onRefresh,
+//   onRefreshHistory,
+//   onExpireOld,
 //   onChangeStatus
 // }: ActiveReservationsPanelProps) {
 //   return (
 //     <section className="active-reservations-panel">
 //       <div className="active-reservations-header">
 //         <div>
-//           <h3>Reservas ativas</h3>
+//           <h3>Reservas</h3>
 //           <p>
 //             Controle operacional para evitar que o mesmo estoque seja buscado por
 //             mais de uma equipe.
 //           </p>
 //         </div>
 
-//         <button
-//           type="button"
-//           className="secondary-button"
-//           onClick={() => void onRefresh()}
-//           disabled={!canUseApi || isLoading}
-//         >
-//           {isLoading ? 'Atualizando...' : 'Atualizar reservas'}
-//         </button>
+//         <div className="active-reservations-actions">
+//           <button
+//             type="button"
+//             className="secondary-button"
+//             onClick={() => void onRefresh()}
+//             disabled={!canUseApi || isLoading}
+//           >
+//             {isLoading ? 'Atualizando...' : 'Atualizar ativas'}
+//           </button>
+
+//           <button
+//             type="button"
+//             className="secondary-button"
+//             onClick={() => void onExpireOld()}
+//             disabled={!canUseApi}
+//           >
+//             Expirar vencidas
+//           </button>
+
+//           <button
+//             type="button"
+//             className="secondary-button"
+//             onClick={() => void onRefreshHistory()}
+//             disabled={!canUseApi || isHistoryLoading}
+//           >
+//             {isHistoryLoading ? 'Carregando...' : 'Histórico'}
+//           </button>
+//         </div>
 //       </div>
 
 //       {error && <p className="form-message form-message--error">{error}</p>}
 
-//       {!error && reservations.length === 0 && !isLoading && (
+//       {!error && activeReservations.length === 0 && !isLoading && (
 //         <div className="empty-state">
 //           <strong>Nenhuma reserva ativa.</strong>
 //           <p>Quando uma equipe reservar retirada, ela aparecerá aqui.</p>
@@ -132,11 +197,15 @@
 //       )}
 
 //       <div className="reservations-list">
-//         {reservations.map((reservation) => {
+//         {activeReservations.map((reservation) => {
 //           const actions = getActions(reservation.status);
+//           const expiryTone = getExpiryTone(reservation);
 
 //           return (
-//             <article className="reservation-card" key={reservation.id}>
+//             <article
+//               className={`reservation-card reservation-card--${expiryTone}`}
+//               key={reservation.id}
+//             >
 //               <div className="reservation-card-top">
 //                 <span
 //                   className={`reservation-status reservation-status--${statusTone(
@@ -146,8 +215,8 @@
 //                   {statusLabel(reservation.status)}
 //                 </span>
 
-//                 <span className="reservation-expiry">
-//                   Expira: {formatDateTime(reservation.reservedUntilUtc)}
+//                 <span className={`reservation-expiry reservation-expiry--${expiryTone}`}>
+//                   {expiryLabel(reservation)}
 //                 </span>
 //               </div>
 
@@ -178,6 +247,10 @@
 //                 </div>
 //               </div>
 
+//               <p className="reservation-expiry-detail">
+//                 Reservada até: {formatDateTime(reservation.reservedUntilUtc)}
+//               </p>
+
 //               {reservation.notes && (
 //                 <p className="reservation-notes">{reservation.notes}</p>
 //               )}
@@ -201,6 +274,45 @@
 //           );
 //         })}
 //       </div>
+
+//       <section className="reservation-history">
+//         <h4>Histórico finalizado</h4>
+
+//         {historyError && (
+//           <p className="form-message form-message--error">{historyError}</p>
+//         )}
+
+//         {!historyError && finalizedReservations.length === 0 && !isHistoryLoading && (
+//           <p className="reservation-history-empty">
+//             Nenhuma reserva entregue, cancelada ou expirada carregada.
+//           </p>
+//         )}
+
+//         <div className="reservation-history-list">
+//           {finalizedReservations.map((reservation) => (
+//             <article className="reservation-history-item" key={reservation.id}>
+//               <span
+//                 className={`reservation-status reservation-status--${statusTone(
+//                   reservation.status
+//                 )}`}
+//               >
+//                 {statusLabel(reservation.status)}
+//               </span>
+
+//               <strong>{reservation.medicineName}</strong>
+
+//               <span>
+//                 {formatQuantity(reservation.reservedQuantity)} {reservation.unit}
+//               </span>
+
+//               <small>
+//                 {reservation.demandLocationName ?? '-'} ←{' '}
+//                 {reservation.supplyLocationName ?? '-'}
+//               </small>
+//             </article>
+//           ))}
+//         </div>
+//       </section>
 //     </section>
 //   );
 // }
@@ -315,13 +427,13 @@ function expiryLabel(reservation: ReservationResponse): string {
 function getActions(status: ReservationStatus): ReservationAction[] {
   switch (status) {
     case 'Pending':
-      return ['confirm', 'in-transit', 'delivered', 'cancel'];
+      return ['confirm', 'cancel'];
 
     case 'Confirmed':
-      return ['in-transit', 'delivered', 'cancel'];
+      return ['in-transit', 'cancel'];
 
     case 'InTransit':
-      return ['delivered', 'cancel'];
+      return ['delivered'];
 
     default:
       return [];
@@ -355,13 +467,13 @@ export function ActiveReservationsPanel({
   onChangeStatus
 }: ActiveReservationsPanelProps) {
   return (
-    <section className="active-reservations-panel">
+    <section className="active-reservations-panel active-reservations-panel--page">
       <div className="active-reservations-header">
         <div>
-          <h3>Reservas</h3>
+          <h3>Reservas ativas</h3>
           <p>
-            Controle operacional para evitar que o mesmo estoque seja buscado por
-            mais de uma equipe.
+            Fluxo seguro: confirmar, marcar em trânsito e depois marcar como
+            entregue. Isso evita baixa de estoque sem rastreio operacional.
           </p>
         </div>
 
@@ -390,7 +502,7 @@ export function ActiveReservationsPanel({
             onClick={() => void onRefreshHistory()}
             disabled={!canUseApi || isHistoryLoading}
           >
-            {isHistoryLoading ? 'Carregando...' : 'Histórico'}
+            {isHistoryLoading ? 'Carregando...' : 'Atualizar histórico'}
           </button>
         </div>
       </div>
