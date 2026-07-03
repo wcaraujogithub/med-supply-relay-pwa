@@ -107,13 +107,13 @@
 // function getActions(status: ReservationStatus): ReservationAction[] {
 //   switch (status) {
 //     case 'Pending':
-//       return ['confirm', 'in-transit', 'delivered', 'cancel'];
+//       return ['confirm', 'cancel'];
 
 //     case 'Confirmed':
-//       return ['in-transit', 'delivered', 'cancel'];
+//       return ['in-transit', 'cancel'];
 
 //     case 'InTransit':
-//       return ['delivered', 'cancel'];
+//       return ['delivered'];
 
 //     default:
 //       return [];
@@ -147,13 +147,13 @@
 //   onChangeStatus
 // }: ActiveReservationsPanelProps) {
 //   return (
-//     <section className="active-reservations-panel">
+//     <section className="active-reservations-panel active-reservations-panel--page">
 //       <div className="active-reservations-header">
 //         <div>
-//           <h3>Reservas</h3>
+//           <h3>Reservas ativas</h3>
 //           <p>
-//             Controle operacional para evitar que o mesmo estoque seja buscado por
-//             mais de uma equipe.
+//             Fluxo seguro: confirmar, marcar em trânsito e depois marcar como
+//             entregue. Isso evita baixa de estoque sem rastreio operacional.
 //           </p>
 //         </div>
 
@@ -182,7 +182,7 @@
 //             onClick={() => void onRefreshHistory()}
 //             disabled={!canUseApi || isHistoryLoading}
 //           >
-//             {isHistoryLoading ? 'Carregando...' : 'Histórico'}
+//             {isHistoryLoading ? 'Carregando...' : 'Atualizar histórico'}
 //           </button>
 //         </div>
 //       </div>
@@ -318,6 +318,8 @@
 // }
 
 
+import { formatAppDateTime, formatAppNumber } from '../../i18n/format';
+import { useI18n } from '../../i18n/I18nProvider';
 import type {
   ReservationAction,
   ReservationResponse,
@@ -341,25 +343,6 @@ type ActiveReservationsPanelProps = {
   ) => Promise<void> | void;
 };
 
-function statusLabel(status: ReservationStatus): string {
-  switch (status) {
-    case 'Pending':
-      return 'Pendente';
-    case 'Confirmed':
-      return 'Confirmada';
-    case 'InTransit':
-      return 'Em trânsito';
-    case 'Delivered':
-      return 'Entregue';
-    case 'Cancelled':
-      return 'Cancelada';
-    case 'Expired':
-      return 'Expirada';
-    default:
-      return String(status);
-  }
-}
-
 function statusTone(status: ReservationStatus): string {
   switch (status) {
     case 'Pending':
@@ -377,16 +360,6 @@ function statusTone(status: ReservationStatus): string {
     default:
       return 'pending';
   }
-}
-
-function formatQuantity(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    maximumFractionDigits: 3
-  }).format(value);
-}
-
-function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString('pt-BR');
 }
 
 function minutesUntil(value: string): number {
@@ -407,23 +380,6 @@ function getExpiryTone(reservation: ReservationResponse): string {
   return 'normal';
 }
 
-function expiryLabel(reservation: ReservationResponse): string {
-  const minutes = minutesUntil(reservation.reservedUntilUtc);
-
-  if (minutes <= 0) {
-    return 'Vencida';
-  }
-
-  if (minutes < 60) {
-    return `Expira em ${minutes} min`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-
-  return `Expira em ${hours}h${rest.toString().padStart(2, '0')}`;
-}
-
 function getActions(status: ReservationStatus): ReservationAction[] {
   switch (status) {
     case 'Pending':
@@ -440,19 +396,6 @@ function getActions(status: ReservationStatus): ReservationAction[] {
   }
 }
 
-function actionLabel(action: ReservationAction): string {
-  switch (action) {
-    case 'confirm':
-      return 'Confirmar';
-    case 'in-transit':
-      return 'Em trânsito';
-    case 'delivered':
-      return 'Entregue';
-    case 'cancel':
-      return 'Cancelar';
-  }
-}
-
 export function ActiveReservationsPanel({
   activeReservations,
   finalizedReservations,
@@ -466,15 +409,51 @@ export function ActiveReservationsPanel({
   onExpireOld,
   onChangeStatus
 }: ActiveReservationsPanelProps) {
+  const { language, t } = useI18n();
+
+  function statusLabel(status: ReservationStatus): string {
+    return t(`reservations.status.${status}`);
+  }
+
+  function actionLabel(action: ReservationAction): string {
+    switch (action) {
+      case 'confirm':
+        return t('reservations.action.confirm');
+      case 'in-transit':
+        return t('reservations.action.inTransit');
+      case 'delivered':
+        return t('reservations.action.delivered');
+      case 'cancel':
+        return t('reservations.action.cancel');
+    }
+  }
+
+  function expiryLabel(reservation: ReservationResponse): string {
+    const minutes = minutesUntil(reservation.reservedUntilUtc);
+
+    if (minutes <= 0) {
+      return t('reservations.expiresNow');
+    }
+
+    if (minutes < 60) {
+      return t('reservations.expiresMinutes', { minutes });
+    }
+
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+
+    return t('reservations.expiresHours', {
+      hours,
+      minutes: rest.toString().padStart(2, '0')
+    });
+  }
+
   return (
     <section className="active-reservations-panel active-reservations-panel--page">
       <div className="active-reservations-header">
         <div>
-          <h3>Reservas ativas</h3>
-          <p>
-            Fluxo seguro: confirmar, marcar em trânsito e depois marcar como
-            entregue. Isso evita baixa de estoque sem rastreio operacional.
-          </p>
+          <h3>{t('reservations.title')}</h3>
+          <p>{t('reservations.description')}</p>
         </div>
 
         <div className="active-reservations-actions">
@@ -484,7 +463,7 @@ export function ActiveReservationsPanel({
             onClick={() => void onRefresh()}
             disabled={!canUseApi || isLoading}
           >
-            {isLoading ? 'Atualizando...' : 'Atualizar ativas'}
+            {isLoading ? t('reservations.updating') : t('reservations.updateActive')}
           </button>
 
           <button
@@ -493,7 +472,7 @@ export function ActiveReservationsPanel({
             onClick={() => void onExpireOld()}
             disabled={!canUseApi}
           >
-            Expirar vencidas
+            {t('reservations.expireOld')}
           </button>
 
           <button
@@ -502,7 +481,9 @@ export function ActiveReservationsPanel({
             onClick={() => void onRefreshHistory()}
             disabled={!canUseApi || isHistoryLoading}
           >
-            {isHistoryLoading ? 'Carregando...' : 'Atualizar histórico'}
+            {isHistoryLoading
+              ? t('reservations.loadingHistory')
+              : t('reservations.updateHistory')}
           </button>
         </div>
       </div>
@@ -511,8 +492,8 @@ export function ActiveReservationsPanel({
 
       {!error && activeReservations.length === 0 && !isLoading && (
         <div className="empty-state">
-          <strong>Nenhuma reserva ativa.</strong>
-          <p>Quando uma equipe reservar retirada, ela aparecerá aqui.</p>
+          <strong>{t('reservations.emptyTitle')}</strong>
+          <p>{t('reservations.emptyText')}</p>
         </div>
       )}
 
@@ -544,31 +525,33 @@ export function ActiveReservationsPanel({
 
               <div className="reservation-card-grid">
                 <div>
-                  <span>Reservado</span>
+                  <span>{t('reservations.reserved')}</span>
                   <strong>
-                    {formatQuantity(reservation.reservedQuantity)}{' '}
+                    {formatAppNumber(reservation.reservedQuantity, language)}{' '}
                     {reservation.unit}
                   </strong>
                 </div>
 
                 <div>
-                  <span>Demanda</span>
+                  <span>{t('reservations.demand')}</span>
                   <strong>{reservation.demandLocationName ?? '-'}</strong>
                 </div>
 
                 <div>
-                  <span>Oferta</span>
+                  <span>{t('reservations.supply')}</span>
                   <strong>{reservation.supplyLocationName ?? '-'}</strong>
                 </div>
 
                 <div>
-                  <span>Operador</span>
+                  <span>{t('reservations.operator')}</span>
                   <strong>{reservation.reservedByOperatorAlias ?? '-'}</strong>
                 </div>
               </div>
 
               <p className="reservation-expiry-detail">
-                Reservada até: {formatDateTime(reservation.reservedUntilUtc)}
+                {t('reservations.reservedUntil', {
+                  value: formatAppDateTime(reservation.reservedUntilUtc, language)
+                })}
               </p>
 
               {reservation.notes && (
@@ -596,7 +579,7 @@ export function ActiveReservationsPanel({
       </div>
 
       <section className="reservation-history">
-        <h4>Histórico finalizado</h4>
+        <h4>{t('reservations.historyTitle')}</h4>
 
         {historyError && (
           <p className="form-message form-message--error">{historyError}</p>
@@ -604,7 +587,7 @@ export function ActiveReservationsPanel({
 
         {!historyError && finalizedReservations.length === 0 && !isHistoryLoading && (
           <p className="reservation-history-empty">
-            Nenhuma reserva entregue, cancelada ou expirada carregada.
+            {t('reservations.historyEmpty')}
           </p>
         )}
 
@@ -622,7 +605,8 @@ export function ActiveReservationsPanel({
               <strong>{reservation.medicineName}</strong>
 
               <span>
-                {formatQuantity(reservation.reservedQuantity)} {reservation.unit}
+                {formatAppNumber(reservation.reservedQuantity, language)}{' '}
+                {reservation.unit}
               </span>
 
               <small>

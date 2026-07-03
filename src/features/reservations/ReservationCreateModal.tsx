@@ -1,5 +1,277 @@
+// import { useEffect, useMemo, useState } from 'react';
+// import { getOperatorAlias } from '../../db/deviceIdentity';
+// import type { MatchResultDto } from '../matches/matchesTypes';
+// import { createReservationFromMatch } from './reservationsApi';
+// import type { ReservationResponse } from './reservationTypes';
+
+// type ReservationCreateModalProps = {
+//   match: MatchResultDto | null;
+//   isOpen: boolean;
+//   onClose: () => void;
+//   onCreated: (reservation: ReservationResponse) => Promise<void> | void;
+// };
+
+// function formatQuantity(value: number): string {
+//   return new Intl.NumberFormat('pt-BR', {
+//     maximumFractionDigits: 3
+//   }).format(value);
+// }
+
+// function parseQuantity(value: string): number {
+//   return Number(value.replace(',', '.'));
+// }
+
+// export function ReservationCreateModal({
+//   match,
+//   isOpen,
+//   onClose,
+//   onCreated
+// }: ReservationCreateModalProps) {
+//   const availableQuantity = useMemo(() => {
+//     if (!match) {
+//       return 0;
+//     }
+
+//     return match.supplyAvailableQuantity ?? match.supplyQuantity ?? 0;
+//   }, [match]);
+
+//   const defaultQuantity = useMemo(() => {
+//     if (!match) {
+//       return 0;
+//     }
+
+//     return Math.min(match.suggestedQuantity, availableQuantity);
+//   }, [availableQuantity, match]);
+
+//   const [quantity, setQuantity] = useState('');
+//   const [holdMinutes, setHoldMinutes] = useState(120);
+//   const [notes, setNotes] = useState('');
+//   const [error, setError] = useState<string | null>(null);
+//   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+//   const [isSaving, setIsSaving] = useState(false);
+
+//   useEffect(() => {
+//     if (!isOpen || !match) {
+//       return;
+//     }
+
+//     setQuantity(String(defaultQuantity || ''));
+//     setHoldMinutes(120);
+//     setNotes('');
+//     setError(null);
+//     setSuccessMessage(null);
+//   }, [defaultQuantity, isOpen, match]);
+
+//   if (!isOpen || !match) {
+//     return null;
+//   }
+
+//   async function handleSubmit() {
+//     if (!match) {
+//       return;
+//     }
+
+//     setError(null);
+//     setSuccessMessage(null);
+
+//     const parsedQuantity = parseQuantity(quantity);
+
+//     if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
+//       setError('Informe uma quantidade válida para reservar.');
+//       return;
+//     }
+
+//     if (parsedQuantity > availableQuantity) {
+//       setError(
+//         `Quantidade maior que o livre agora: ${formatQuantity(
+//           availableQuantity
+//         )} ${match.unit}.`
+//       );
+//       return;
+//     }
+
+//     setIsSaving(true);
+
+//     try {
+//       const reservation = await createReservationFromMatch(
+//         match,
+//         parsedQuantity,
+//         holdMinutes,
+//         notes
+//       );
+
+//       setSuccessMessage('Reserva criada com sucesso.');
+//       await onCreated(reservation);
+//     } catch (currentError) {
+//       const message =
+//         currentError instanceof Error
+//           ? currentError.message
+//           : 'Não foi possível criar a reserva.';
+
+//       setError(message);
+//     } finally {
+//       setIsSaving(false);
+//     }
+//   }
+
+//   function handleClose() {
+//     setError(null);
+//     setSuccessMessage(null);
+//     onClose();
+//   }
+
+//   return (
+//     <div className="modal-backdrop reservation-modal-backdrop" role="presentation">
+//       <section
+//         className="modal-card reservation-modal"
+//         role="dialog"
+//         aria-modal="true"
+//         aria-labelledby="reservation-create-title"
+//       >
+//         <header className="modal-header modal-header--matches">
+//           <div>
+//             <p className="eyebrow">Reserva online</p>
+//             <h2 id="reservation-create-title">Reservar retirada</h2>
+//             <p>
+//               A reserva precisa de internet e será confirmada pelo servidor para
+//               evitar que duas equipes busquem o mesmo medicamento.
+//             </p>
+//           </div>
+
+//           <button
+//             type="button"
+//             className="icon-button"
+//             aria-label="Fechar"
+//             onClick={handleClose}
+//           >
+//             ×
+//           </button>
+//         </header>
+
+//         <div className="reservation-create-content">
+//           <section className="reservation-target">
+//             <h3>{match.medicineName}</h3>
+
+//             <div className="reservation-route">
+//               <div>
+//                 <span>Precisa</span>
+//                 <strong>{match.demandLocationName ?? '-'}</strong>
+//               </div>
+
+//               <div>
+//                 <span>Tem disponível</span>
+//                 <strong>{match.supplyLocationName ?? '-'}</strong>
+//               </div>
+//             </div>
+
+//             <div className="reservation-stock-grid">
+//               <div>
+//                 <span>Total oferta</span>
+//                 <strong>
+//                   {formatQuantity(match.supplyTotalQuantity ?? match.supplyQuantity)}{' '}
+//                   {match.unit}
+//                 </strong>
+//               </div>
+
+//               <div>
+//                 <span>Reservado</span>
+//                 <strong>
+//                   {formatQuantity(match.supplyReservedQuantity ?? 0)} {match.unit}
+//                 </strong>
+//               </div>
+
+//               <div>
+//                 <span>Livre agora</span>
+//                 <strong>
+//                   {formatQuantity(availableQuantity)} {match.unit}
+//                 </strong>
+//               </div>
+
+//               <div>
+//                 <span>Sugestão</span>
+//                 <strong>
+//                   {formatQuantity(match.suggestedQuantity)} {match.unit}
+//                 </strong>
+//               </div>
+//             </div>
+//           </section>
+
+//           <section className="reservation-form">
+//             <label>
+//               <span>Quantidade a reservar *</span>
+//               <input
+//                 value={quantity}
+//                 onChange={(event) => setQuantity(event.target.value)}
+//                 inputMode="decimal"
+//                 placeholder="Ex.: 5"
+//               />
+//             </label>
+
+//             <label>
+//               <span>Tempo de reserva</span>
+//               <select
+//                 value={holdMinutes}
+//                 onChange={(event) => setHoldMinutes(Number(event.target.value))}
+//               >
+//                 <option value={30}>30 minutos</option>
+//                 <option value={60}>1 hora</option>
+//                 <option value={120}>2 horas</option>
+//                 <option value={240}>4 horas</option>
+//                 <option value={480}>8 horas</option>
+//               </select>
+//             </label>
+
+//             <label className="full-width">
+//               <span>Observação</span>
+//               <textarea
+//                 value={notes}
+//                 onChange={(event) => setNotes(event.target.value)}
+//                 rows={3}
+//                 placeholder="Ex.: equipe vai buscar agora, veículo 01"
+//               />
+//             </label>
+
+//             <p className="reservation-operator-note">
+//               Operador: <strong>{getOperatorAlias() ?? 'não informado'}</strong>
+//             </p>
+//           </section>
+
+//           {error && <p className="form-message form-message--error">{error}</p>}
+
+//           {successMessage && (
+//             <p className="form-message form-message--success">{successMessage}</p>
+//           )}
+
+//           <footer className="modal-actions">
+//             <button
+//               type="button"
+//               className="secondary-button"
+//               onClick={handleClose}
+//               disabled={isSaving}
+//             >
+//               Fechar
+//             </button>
+
+//             <button
+//               type="button"
+//               className="submit-button"
+//               onClick={() => void handleSubmit()}
+//               disabled={isSaving || availableQuantity <= 0}
+//             >
+//               {isSaving ? 'Reservando...' : 'Confirmar reserva'}
+//             </button>
+//           </footer>
+//         </div>
+//       </section>
+//     </div>
+//   );
+// }
+
+
 import { useEffect, useMemo, useState } from 'react';
 import { getOperatorAlias } from '../../db/deviceIdentity';
+import { formatAppNumber } from '../../i18n/format';
+import { useI18n } from '../../i18n/I18nProvider';
 import type { MatchResultDto } from '../matches/matchesTypes';
 import { createReservationFromMatch } from './reservationsApi';
 import type { ReservationResponse } from './reservationTypes';
@@ -11,12 +283,6 @@ type ReservationCreateModalProps = {
   onCreated: (reservation: ReservationResponse) => Promise<void> | void;
 };
 
-function formatQuantity(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    maximumFractionDigits: 3
-  }).format(value);
-}
-
 function parseQuantity(value: string): number {
   return Number(value.replace(',', '.'));
 }
@@ -27,6 +293,8 @@ export function ReservationCreateModal({
   onClose,
   onCreated
 }: ReservationCreateModalProps) {
+  const { language, t } = useI18n();
+
   const availableQuantity = useMemo(() => {
     if (!match) {
       return 0;
@@ -77,15 +345,16 @@ export function ReservationCreateModal({
     const parsedQuantity = parseQuantity(quantity);
 
     if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0) {
-      setError('Informe uma quantidade válida para reservar.');
+      setError(t('reservationModal.invalidQty'));
       return;
     }
 
     if (parsedQuantity > availableQuantity) {
       setError(
-        `Quantidade maior que o livre agora: ${formatQuantity(
-          availableQuantity
-        )} ${match.unit}.`
+        t('reservationModal.overQty', {
+          quantity: formatAppNumber(availableQuantity, language),
+          unit: match.unit
+        })
       );
       return;
     }
@@ -100,13 +369,13 @@ export function ReservationCreateModal({
         notes
       );
 
-      setSuccessMessage('Reserva criada com sucesso.');
+      setSuccessMessage(t('reservationModal.success'));
       await onCreated(reservation);
     } catch (currentError) {
       const message =
         currentError instanceof Error
           ? currentError.message
-          : 'Não foi possível criar a reserva.';
+          : t('reservationModal.fail');
 
       setError(message);
     } finally {
@@ -130,18 +399,15 @@ export function ReservationCreateModal({
       >
         <header className="modal-header modal-header--matches">
           <div>
-            <p className="eyebrow">Reserva online</p>
-            <h2 id="reservation-create-title">Reservar retirada</h2>
-            <p>
-              A reserva precisa de internet e será confirmada pelo servidor para
-              evitar que duas equipes busquem o mesmo medicamento.
-            </p>
+            <p className="eyebrow">{t('reservationModal.eyebrow')}</p>
+            <h2 id="reservation-create-title">{t('reservationModal.title')}</h2>
+            <p>{t('reservationModal.description')}</p>
           </div>
 
           <button
             type="button"
             className="icon-button"
-            aria-label="Fechar"
+            aria-label={t('reservationModal.close')}
             onClick={handleClose}
           >
             ×
@@ -154,43 +420,44 @@ export function ReservationCreateModal({
 
             <div className="reservation-route">
               <div>
-                <span>Precisa</span>
+                <span>{t('matches.needs')}</span>
                 <strong>{match.demandLocationName ?? '-'}</strong>
               </div>
 
               <div>
-                <span>Tem disponível</span>
+                <span>{t('matches.hasAvailable')}</span>
                 <strong>{match.supplyLocationName ?? '-'}</strong>
               </div>
             </div>
 
             <div className="reservation-stock-grid">
               <div>
-                <span>Total oferta</span>
+                <span>{t('matches.totalSupply')}</span>
                 <strong>
-                  {formatQuantity(match.supplyTotalQuantity ?? match.supplyQuantity)}{' '}
+                  {formatAppNumber(match.supplyTotalQuantity ?? match.supplyQuantity, language)}{' '}
                   {match.unit}
                 </strong>
               </div>
 
               <div>
-                <span>Reservado</span>
+                <span>{t('matches.reserved')}</span>
                 <strong>
-                  {formatQuantity(match.supplyReservedQuantity ?? 0)} {match.unit}
+                  {formatAppNumber(match.supplyReservedQuantity ?? 0, language)}{' '}
+                  {match.unit}
                 </strong>
               </div>
 
               <div>
-                <span>Livre agora</span>
+                <span>{t('matches.freeNow')}</span>
                 <strong>
-                  {formatQuantity(availableQuantity)} {match.unit}
+                  {formatAppNumber(availableQuantity, language)} {match.unit}
                 </strong>
               </div>
 
               <div>
-                <span>Sugestão</span>
+                <span>{t('matches.suggestion')}</span>
                 <strong>
-                  {formatQuantity(match.suggestedQuantity)} {match.unit}
+                  {formatAppNumber(match.suggestedQuantity, language)} {match.unit}
                 </strong>
               </div>
             </div>
@@ -198,41 +465,43 @@ export function ReservationCreateModal({
 
           <section className="reservation-form">
             <label>
-              <span>Quantidade a reservar *</span>
+              <span>{t('reservationModal.quantity')}</span>
               <input
                 value={quantity}
                 onChange={(event) => setQuantity(event.target.value)}
                 inputMode="decimal"
-                placeholder="Ex.: 5"
+                placeholder="5"
               />
             </label>
 
             <label>
-              <span>Tempo de reserva</span>
+              <span>{t('reservationModal.time')}</span>
               <select
                 value={holdMinutes}
                 onChange={(event) => setHoldMinutes(Number(event.target.value))}
               >
-                <option value={30}>30 minutos</option>
-                <option value={60}>1 hora</option>
-                <option value={120}>2 horas</option>
-                <option value={240}>4 horas</option>
-                <option value={480}>8 horas</option>
+                <option value={30}>{t('reservationModal.30m')}</option>
+                <option value={60}>{t('reservationModal.60m')}</option>
+                <option value={120}>{t('reservationModal.120m')}</option>
+                <option value={240}>{t('reservationModal.240m')}</option>
+                <option value={480}>{t('reservationModal.480m')}</option>
               </select>
             </label>
 
             <label className="full-width">
-              <span>Observação</span>
+              <span>{t('reservationModal.notes')}</span>
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 rows={3}
-                placeholder="Ex.: equipe vai buscar agora, veículo 01"
+                placeholder={t('reservationModal.notesPlaceholder')}
               />
             </label>
 
             <p className="reservation-operator-note">
-              Operador: <strong>{getOperatorAlias() ?? 'não informado'}</strong>
+              {t('reservationModal.operator', {
+                value: getOperatorAlias() ?? t('reservationModal.noOperator')
+              })}
             </p>
           </section>
 
@@ -249,7 +518,7 @@ export function ReservationCreateModal({
               onClick={handleClose}
               disabled={isSaving}
             >
-              Fechar
+              {t('reservationModal.close')}
             </button>
 
             <button
@@ -258,7 +527,7 @@ export function ReservationCreateModal({
               onClick={() => void handleSubmit()}
               disabled={isSaving || availableQuantity <= 0}
             >
-              {isSaving ? 'Reservando...' : 'Confirmar reserva'}
+              {isSaving ? t('reservationModal.saving') : t('reservationModal.confirm')}
             </button>
           </footer>
         </div>

@@ -1,5 +1,6 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { I18nProvider } from './i18n/I18nProvider';
 import App from './App';
 import './App.css';
 import { registerServiceWorker } from './pwa/registerServiceWorker';
@@ -10,10 +11,17 @@ if (!rootElement) {
   throw new Error('Root element not found.');
 }
 
-createRoot(rootElement).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+// createRoot(rootElement).render(
+//   <StrictMode>
+//     <App />
+//   </StrictMode>
+// );
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <I18nProvider>
+      <App />
+    </I18nProvider>
+  </React.StrictMode>
 );
 
 registerServiceWorker();
