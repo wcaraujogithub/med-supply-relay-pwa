@@ -1,3 +1,4 @@
+// import type { FormEvent } from 'react';
 // import { useMemo, useState } from 'react';
 // import {
 //   findOrCreateOfflineLocation,
@@ -7,6 +8,7 @@
 //   DemandPriority,
 //   ReliefLocationType
 // } from '../../db/localTypes';
+// import { getCurrentBrowserPosition } from '../../shared/utils/geolocation';
 
 // type DemandFlowModalProps = {
 //   isOpen: boolean;
@@ -88,6 +90,16 @@
 //   };
 // }
 
+// function parseNullableNumber(value: string): number | null {
+//   if (!value.trim()) {
+//     return null;
+//   }
+
+//   const parsed = Number(value.replace(',', '.'));
+
+//   return Number.isFinite(parsed) ? parsed : null;
+// }
+
 // export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
 //   const [locationName, setLocationName] = useState('');
 //   const [locationCode, setLocationCode] = useState('');
@@ -95,7 +107,11 @@
 //     useState<ReliefLocationType>('Hospital');
 //   const [area, setArea] = useState('');
 //   const [contactAlias, setContactAlias] = useState('');
+//   const [contactName, setContactName] = useState('');
+//   const [contactPhone, setContactPhone] = useState('');
 //   const [address, setAddress] = useState('');
+//   const [latitude, setLatitude] = useState('');
+//   const [longitude, setLongitude] = useState('');
 //   const [locationNotes, setLocationNotes] = useState('');
 
 //   const [items, setItems] = useState<DemandFormItem[]>([
@@ -103,8 +119,10 @@
 //   ]);
 
 //   const [error, setError] = useState<string | null>(null);
+//   const [geoMessage, setGeoMessage] = useState<string | null>(null);
 //   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 //   const [isSaving, setIsSaving] = useState(false);
+//   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
 //   const validItems = useMemo(() => {
 //     return items.filter((item) =>
@@ -135,10 +153,7 @@
 //     );
 //   }
 
-//   function updatePriority(
-//     id: string,
-//     value: DemandPriority
-//   ): void {
+//   function updatePriority(id: string, value: DemandPriority): void {
 //     setItems((current) =>
 //       current.map((item) =>
 //         item.id === id
@@ -171,10 +186,15 @@
 //     setLocationType('Hospital');
 //     setArea('');
 //     setContactAlias('');
+//     setContactName('');
+//     setContactPhone('');
 //     setAddress('');
+//     setLatitude('');
+//     setLongitude('');
 //     setLocationNotes('');
 //     setItems([createEmptyDemandItem()]);
 //     setError(null);
+//     setGeoMessage(null);
 //     setSuccessMessage(null);
 //   }
 
@@ -183,7 +203,30 @@
 //     onClose();
 //   }
 
-//   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+//   async function handleUseCurrentLocation(): Promise<void> {
+//     setGeoMessage(null);
+//     setError(null);
+//     setIsGettingLocation(true);
+
+//     try {
+//       const position = await getCurrentBrowserPosition();
+
+//       setLatitude(String(Number(position.latitude.toFixed(6))));
+//       setLongitude(String(Number(position.longitude.toFixed(6))));
+//       setGeoMessage('Localização preenchida com sucesso.');
+//     } catch (currentError) {
+//       const message =
+//         currentError instanceof Error
+//           ? currentError.message
+//           : 'Falha ao obter localização.';
+
+//       setGeoMessage(message);
+//     } finally {
+//       setIsGettingLocation(false);
+//     }
+//   }
+
+//   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 //     event.preventDefault();
 
 //     setError(null);
@@ -199,16 +242,19 @@
 //       return;
 //     }
 
-//     const invalidQuantity = items.some((item) => {
-//       if (item.medicineName.trim().length === 0) {
-//         return false;
-//       }
+//     const parsedLatitude = parseNullableNumber(latitude);
+//     const parsedLongitude = parseNullableNumber(longitude);
 
-//       return Number(item.requestedQuantity.replace(',', '.')) <= 0;
-//     });
+//     if (parsedLatitude !== null && (parsedLatitude < -90 || parsedLatitude > 90)) {
+//       setError('Latitude deve estar entre -90 e 90.');
+//       return;
+//     }
 
-//     if (invalidQuantity) {
-//       setError('Existe medicamento com quantidade inválida.');
+//     if (
+//       parsedLongitude !== null &&
+//       (parsedLongitude < -180 || parsedLongitude > 180)
+//     ) {
+//       setError('Longitude deve estar entre -180 e 180.');
 //       return;
 //     }
 
@@ -221,7 +267,11 @@
 //         type: locationType,
 //         area,
 //         contactAlias,
+//         contactName,
+//         contactPhone,
 //         address,
+//         latitude: parsedLatitude,
+//         longitude: parsedLongitude,
 //         notes: locationNotes
 //       });
 
@@ -243,7 +293,6 @@
 //       );
 
 //       setItems([createEmptyDemandItem()]);
-//       setLocationNotes('');
 //     } catch {
 //       setError('Não foi possível salvar a demanda offline.');
 //     } finally {
@@ -338,6 +387,25 @@
 //               </label>
 
 //               <label>
+//                 <span>Nome do contato</span>
+//                 <input
+//                   value={contactName}
+//                   onChange={(event) => setContactName(event.target.value)}
+//                   placeholder="Opcional"
+//                 />
+//               </label>
+
+//               <label>
+//                 <span>Telefone do contato</span>
+//                 <input
+//                   value={contactPhone}
+//                   onChange={(event) => setContactPhone(event.target.value)}
+//                   placeholder="Opcional"
+//                   inputMode="tel"
+//                 />
+//               </label>
+
+//               <label>
 //                 <span>Endereço curto</span>
 //                 <input
 //                   value={address}
@@ -345,6 +413,41 @@
 //                   placeholder="Opcional"
 //                 />
 //               </label>
+
+//               <label>
+//                 <span>Latitude</span>
+//                 <input
+//                   value={latitude}
+//                   onChange={(event) => setLatitude(event.target.value)}
+//                   placeholder="Opcional"
+//                   inputMode="decimal"
+//                 />
+//               </label>
+
+//               <label>
+//                 <span>Longitude</span>
+//                 <input
+//                   value={longitude}
+//                   onChange={(event) => setLongitude(event.target.value)}
+//                   placeholder="Opcional"
+//                   inputMode="decimal"
+//                 />
+//               </label>
+//             </div>
+
+//             <div className="geo-actions">
+//               <button
+//                 type="button"
+//                 className="small-action-button small-action-button--danger"
+//                 onClick={() => void handleUseCurrentLocation()}
+//                 disabled={isGettingLocation}
+//               >
+//                 {isGettingLocation
+//                   ? 'Obtendo localização...'
+//                   : 'Usar localização atual'}
+//               </button>
+
+//               {geoMessage && <span>{geoMessage}</span>}
 //             </div>
 
 //             <label className="full-width">
@@ -539,7 +642,13 @@ import type {
   DemandPriority,
   ReliefLocationType
 } from '../../db/localTypes';
+import { useI18n } from '../../i18n/I18nProvider';
 import { getCurrentBrowserPosition } from '../../shared/utils/geolocation';
+import {
+  demandLocationTypes,
+  demandPriorityOptions,
+  unitOptions
+} from '../forms/emergencyFormOptions';
 
 type DemandFlowModalProps = {
   isOpen: boolean;
@@ -556,57 +665,6 @@ type DemandFormItem = {
   patientGroup: string;
   notes: string;
 };
-
-const locationTypes: Array<{
-  value: ReliefLocationType;
-  label: string;
-}> = [
-  { value: 'Hospital', label: 'Hospital' },
-  { value: 'MedicalPost', label: 'Posto médico' },
-  { value: 'Shelter', label: 'Abrigo' },
-  { value: 'MobileUnit', label: 'Unidade móvel' },
-  { value: 'Ngo', label: 'ONG' },
-  { value: 'Other', label: 'Outro' }
-];
-
-const priorities: Array<{
-  value: DemandPriority;
-  label: string;
-  description: string;
-}> = [
-  {
-    value: 'Critical',
-    label: 'Crítica',
-    description: 'risco imediato, priorizar agora'
-  },
-  {
-    value: 'High',
-    label: 'Alta',
-    description: 'necessidade urgente'
-  },
-  {
-    value: 'Medium',
-    label: 'Média',
-    description: 'necessidade importante'
-  },
-  {
-    value: 'Low',
-    label: 'Baixa',
-    description: 'pode aguardar'
-  }
-];
-
-const units = [
-  'caixas',
-  'comprimidos',
-  'frascos',
-  'ampolas',
-  'unidades',
-  'kits',
-  'litros',
-  'ml',
-  'pacotes'
-];
 
 function createEmptyDemandItem(): DemandFormItem {
   return {
@@ -631,7 +689,13 @@ function parseNullableNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parseQuantity(value: string): number {
+  return Number(value.replace(',', '.'));
+}
+
 export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
+  const { t } = useI18n();
+
   const [locationName, setLocationName] = useState('');
   const [locationCode, setLocationCode] = useState('');
   const [locationType, setLocationType] =
@@ -649,6 +713,9 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
     createEmptyDemandItem()
   ]);
 
+  const [showLocationDetails, setShowLocationDetails] = useState(false);
+  const [showItemDetails, setShowItemDetails] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
   const [geoMessage, setGeoMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -656,11 +723,13 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   const validItems = useMemo(() => {
-    return items.filter((item) =>
-      item.medicineName.trim().length > 0 &&
-      Number(item.requestedQuantity.replace(',', '.')) > 0 &&
-      item.unit.trim().length > 0
-    );
+    return items.filter((item) => {
+      return (
+        item.medicineName.trim().length > 0 &&
+        parseQuantity(item.requestedQuantity) > 0 &&
+        item.unit.trim().length > 0
+      );
+    });
   }, [items]);
 
   if (!isOpen) {
@@ -724,6 +793,8 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
     setLongitude('');
     setLocationNotes('');
     setItems([createEmptyDemandItem()]);
+    setShowLocationDetails(false);
+    setShowItemDetails(false);
     setError(null);
     setGeoMessage(null);
     setSuccessMessage(null);
@@ -744,14 +815,10 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
 
       setLatitude(String(Number(position.latitude.toFixed(6))));
       setLongitude(String(Number(position.longitude.toFixed(6))));
-      setGeoMessage('Localização preenchida com sucesso.');
-    } catch (currentError) {
-      const message =
-        currentError instanceof Error
-          ? currentError.message
-          : 'Falha ao obter localização.';
-
-      setGeoMessage(message);
+      setGeoMessage(t('location.geoSuccess'));
+      setShowLocationDetails(true);
+    } catch {
+      setGeoMessage(t('location.geoFail'));
     } finally {
       setIsGettingLocation(false);
     }
@@ -764,12 +831,12 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
     setSuccessMessage(null);
 
     if (locationName.trim().length < 2) {
-      setError('Informe o nome do local. Exemplo: Hospital Caracas 02.');
+      setError(t('demand.requiredLocation'));
       return;
     }
 
     if (validItems.length === 0) {
-      setError('Informe pelo menos um medicamento com quantidade válida.');
+      setError(t('demand.requiredItem'));
       return;
     }
 
@@ -777,7 +844,7 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
     const parsedLongitude = parseNullableNumber(longitude);
 
     if (parsedLatitude !== null && (parsedLatitude < -90 || parsedLatitude > 90)) {
-      setError('Latitude deve estar entre -90 e 90.');
+      setError(t('demand.invalidLatitude'));
       return;
     }
 
@@ -785,7 +852,7 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
       parsedLongitude !== null &&
       (parsedLongitude < -180 || parsedLongitude > 180)
     ) {
-      setError('Longitude deve estar entre -180 e 180.');
+      setError(t('demand.invalidLongitude'));
       return;
     }
 
@@ -811,7 +878,7 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
           locationClientOperationId: location.clientOperationId,
           medicineName: item.medicineName,
           medicineCode: item.medicineCode,
-          requestedQuantity: Number(item.requestedQuantity.replace(',', '.')),
+          requestedQuantity: parseQuantity(item.requestedQuantity),
           unit: item.unit,
           priority: item.priority,
           patientGroup: item.patientGroup,
@@ -820,12 +887,16 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
       }
 
       setSuccessMessage(
-        `${validItems.length} demanda(s) salva(s) offline para ${location.name}.`
+        t('demand.saveSuccess', {
+          count: validItems.length,
+          location: location.name
+        })
       );
 
       setItems([createEmptyDemandItem()]);
+      setShowItemDetails(false);
     } catch {
-      setError('Não foi possível salvar a demanda offline.');
+      setError(t('demand.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -841,132 +912,61 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
       >
         <header className="modal-header modal-header--danger">
           <div>
-            <p className="eyebrow">Demanda offline</p>
-            <h2 id="demand-flow-title">Preciso de remédios</h2>
-            <p>
-              Registre necessidades urgentes do local. O dado fica salvo no
-              dispositivo mesmo sem internet.
-            </p>
+            <p className="eyebrow">{t('demand.eyebrow')}</p>
+            <h2 id="demand-flow-title">{t('demand.title')}</h2>
+            <p>{t('demand.description')}</p>
           </div>
 
           <button
             type="button"
             className="icon-button"
-            aria-label="Fechar"
+            aria-label={t('demand.close')}
             onClick={handleClose}
           >
             ×
           </button>
         </header>
 
-        <form className="emergency-form" onSubmit={handleSubmit}>
-          <fieldset>
-            <legend>Local da demanda</legend>
+        <form className="emergency-form emergency-form--simplified" onSubmit={handleSubmit}>
+          <p className="emergency-helper emergency-helper--danger">
+            {t('demand.helper')}
+          </p>
 
-            <div className="form-grid">
+          <fieldset>
+            <legend>{t('demand.quickSection')}</legend>
+
+            <div className="compact-form-grid">
               <label>
-                <span>Nome do local *</span>
+                <span>{t('location.name')}</span>
                 <input
                   value={locationName}
                   onChange={(event) => setLocationName(event.target.value)}
-                  placeholder="Ex.: Hospital Caracas 02"
+                  placeholder={t('location.nameDemandPlaceholder')}
                   autoFocus
                 />
               </label>
 
               <label>
-                <span>Código do local</span>
-                <input
-                  value={locationCode}
-                  onChange={(event) => setLocationCode(event.target.value)}
-                  placeholder="Ex.: HOSP-002"
-                />
-              </label>
-
-              <label>
-                <span>Tipo</span>
-                <select
-                  value={locationType}
-                  onChange={(event) =>
-                    setLocationType(event.target.value as ReliefLocationType)
-                  }
-                >
-                  {locationTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label>
-                <span>Área / região</span>
+                <span>{t('location.area')}</span>
                 <input
                   value={area}
                   onChange={(event) => setArea(event.target.value)}
-                  placeholder="Ex.: Caracas, La Guaira"
+                  placeholder={t('location.areaPlaceholder')}
                 />
               </label>
 
               <label>
-                <span>Contato simples</span>
-                <input
-                  value={contactAlias}
-                  onChange={(event) => setContactAlias(event.target.value)}
-                  placeholder="Ex.: triagem emergência"
-                />
-              </label>
-
-              <label>
-                <span>Nome do contato</span>
-                <input
-                  value={contactName}
-                  onChange={(event) => setContactName(event.target.value)}
-                  placeholder="Opcional"
-                />
-              </label>
-
-              <label>
-                <span>Telefone do contato</span>
+                <span>{t('location.phone')}</span>
                 <input
                   value={contactPhone}
                   onChange={(event) => setContactPhone(event.target.value)}
-                  placeholder="Opcional"
+                  placeholder={t('location.phonePlaceholder')}
                   inputMode="tel"
-                />
-              </label>
-
-              <label>
-                <span>Endereço curto</span>
-                <input
-                  value={address}
-                  onChange={(event) => setAddress(event.target.value)}
-                  placeholder="Opcional"
-                />
-              </label>
-
-              <label>
-                <span>Latitude</span>
-                <input
-                  value={latitude}
-                  onChange={(event) => setLatitude(event.target.value)}
-                  placeholder="Opcional"
-                  inputMode="decimal"
-                />
-              </label>
-
-              <label>
-                <span>Longitude</span>
-                <input
-                  value={longitude}
-                  onChange={(event) => setLongitude(event.target.value)}
-                  placeholder="Opcional"
-                  inputMode="decimal"
                 />
               </label>
             </div>
 
-            <div className="geo-actions">
+            <div className="quick-actions-row">
               <button
                 type="button"
                 className="small-action-button small-action-button--danger"
@@ -974,42 +974,148 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
                 disabled={isGettingLocation}
               >
                 {isGettingLocation
-                  ? 'Obtendo localização...'
-                  : 'Usar localização atual'}
+                  ? t('location.getting')
+                  : t('location.useCurrent')}
               </button>
 
-              {geoMessage && <span>{geoMessage}</span>}
+              <button
+                type="button"
+                className="details-toggle-button"
+                onClick={() => setShowLocationDetails((current) => !current)}
+              >
+                {showLocationDetails
+                  ? t('common.hideDetails')
+                  : t('common.showDetails')}
+              </button>
+
+              {geoMessage && <span className="geo-message">{geoMessage}</span>}
             </div>
 
-            <label className="full-width">
-              <span>Observação do local</span>
-              <textarea
-                value={locationNotes}
-                onChange={(event) => setLocationNotes(event.target.value)}
-                placeholder="Ex.: ala de emergência, entrada lateral, ponto de triagem"
-                rows={2}
-              />
-            </label>
+            {showLocationDetails && (
+              <div className="details-card details-card--danger">
+                <h3>{t('demand.advancedSection')}</h3>
+
+                <div className="form-grid">
+                  <label>
+                    <span>{t('location.code')}</span>
+                    <input
+                      value={locationCode}
+                      onChange={(event) => setLocationCode(event.target.value)}
+                      placeholder={t('location.codeDemandPlaceholder')}
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t('location.type')}</span>
+                    <select
+                      value={locationType}
+                      onChange={(event) =>
+                        setLocationType(event.target.value as ReliefLocationType)
+                      }
+                    >
+                      {demandLocationTypes.map((type) => (
+                        <option key={type.value} value={type.value}>
+                          {t(type.labelKey)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    <span>{t('location.contactAlias')}</span>
+                    <input
+                      value={contactAlias}
+                      onChange={(event) => setContactAlias(event.target.value)}
+                      placeholder={t('location.contactAliasDemandPlaceholder')}
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t('location.contactName')}</span>
+                    <input
+                      value={contactName}
+                      onChange={(event) => setContactName(event.target.value)}
+                      placeholder={t('common.optional')}
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t('location.address')}</span>
+                    <input
+                      value={address}
+                      onChange={(event) => setAddress(event.target.value)}
+                      placeholder={t('common.optional')}
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t('location.latitude')}</span>
+                    <input
+                      value={latitude}
+                      onChange={(event) => setLatitude(event.target.value)}
+                      placeholder={t('common.optional')}
+                      inputMode="decimal"
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t('location.longitude')}</span>
+                    <input
+                      value={longitude}
+                      onChange={(event) => setLongitude(event.target.value)}
+                      placeholder={t('common.optional')}
+                      inputMode="decimal"
+                    />
+                  </label>
+                </div>
+
+                <label className="full-width">
+                  <span>{t('location.notes')}</span>
+                  <textarea
+                    value={locationNotes}
+                    onChange={(event) => setLocationNotes(event.target.value)}
+                    placeholder={t('location.notesDemandPlaceholder')}
+                    rows={2}
+                  />
+                </label>
+              </div>
+            )}
           </fieldset>
 
           <fieldset>
             <div className="fieldset-title-row">
-              <legend>Medicamentos necessários</legend>
+              <legend>{t('demand.itemsSection')}</legend>
 
-              <button
-                type="button"
-                className="small-action-button small-action-button--danger"
-                onClick={addItem}
-              >
-                + adicionar demanda
-              </button>
+              <div className="fieldset-actions">
+                <button
+                  type="button"
+                  className="small-action-button small-action-button--danger"
+                  onClick={() => setShowItemDetails((current) => !current)}
+                >
+                  {showItemDetails
+                    ? t('common.hideDetails')
+                    : t('common.showDetails')}
+                </button>
+
+                <button
+                  type="button"
+                  className="small-action-button small-action-button--danger"
+                  onClick={addItem}
+                >
+                  {t('demand.addItem')}
+                </button>
+              </div>
             </div>
 
             <div className="supply-items-list">
               {items.map((item, index) => (
                 <div className="supply-item-card demand-item-card" key={item.id}>
                   <div className="supply-item-header">
-                    <strong>Demanda {index + 1}</strong>
+                    <strong>
+                      {t('demand.itemTitle', {
+                        index: index + 1
+                      })}
+                    </strong>
 
                     {items.length > 1 && (
                       <button
@@ -1017,36 +1123,25 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
                         className="danger-link-button"
                         onClick={() => removeItem(item.id)}
                       >
-                        remover
+                        {t('demand.remove')}
                       </button>
                     )}
                   </div>
 
-                  <div className="form-grid">
+                  <div className="compact-form-grid compact-form-grid--demand-item">
                     <label>
-                      <span>Medicamento *</span>
+                      <span>{t('demand.medicineName')}</span>
                       <input
                         value={item.medicineName}
                         onChange={(event) =>
                           updateItem(item.id, 'medicineName', event.target.value)
                         }
-                        placeholder="Ex.: Paracetamol 500mg"
+                        placeholder={t('demand.medicinePlaceholder')}
                       />
                     </label>
 
                     <label>
-                      <span>Código</span>
-                      <input
-                        value={item.medicineCode}
-                        onChange={(event) =>
-                          updateItem(item.id, 'medicineCode', event.target.value)
-                        }
-                        placeholder="Opcional"
-                      />
-                    </label>
-
-                    <label>
-                      <span>Quantidade necessária *</span>
+                      <span>{t('demand.quantity')}</span>
                       <input
                         value={item.requestedQuantity}
                         onChange={(event) =>
@@ -1057,28 +1152,28 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
                           )
                         }
                         inputMode="decimal"
-                        placeholder="Ex.: 5"
+                        placeholder="5"
                       />
                     </label>
 
                     <label>
-                      <span>Unidade *</span>
+                      <span>{t('demand.unit')}</span>
                       <select
                         value={item.unit}
                         onChange={(event) =>
                           updateItem(item.id, 'unit', event.target.value)
                         }
                       >
-                        {units.map((unit) => (
-                          <option key={unit} value={unit}>
-                            {unit}
+                        {unitOptions.map((unit) => (
+                          <option key={unit.value} value={unit.value}>
+                            {t(unit.labelKey)}
                           </option>
                         ))}
                       </select>
                     </label>
 
                     <label>
-                      <span>Urgência *</span>
+                      <span>{t('demand.priority')}</span>
                       <select
                         value={item.priority}
                         onChange={(event) =>
@@ -1088,37 +1183,54 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
                           )
                         }
                       >
-                        {priorities.map((priority) => (
+                        {demandPriorityOptions.map((priority) => (
                           <option key={priority.value} value={priority.value}>
-                            {priority.label} — {priority.description}
+                            {t(priority.labelKey)} — {t(priority.descriptionKey)}
                           </option>
                         ))}
                       </select>
                     </label>
-
-                    <label>
-                      <span>Grupo atendido</span>
-                      <input
-                        value={item.patientGroup}
-                        onChange={(event) =>
-                          updateItem(item.id, 'patientGroup', event.target.value)
-                        }
-                        placeholder="Ex.: triagem, pediatria, emergência"
-                      />
-                    </label>
                   </div>
 
-                  <label className="full-width">
-                    <span>Observação da demanda</span>
-                    <textarea
-                      value={item.notes}
-                      onChange={(event) =>
-                        updateItem(item.id, 'notes', event.target.value)
-                      }
-                      placeholder="Ex.: necessidade crítica para triagem"
-                      rows={2}
-                    />
-                  </label>
+                  {showItemDetails && (
+                    <div className="details-card details-card--item details-card--danger">
+                      <div className="form-grid">
+                        <label>
+                          <span>{t('demand.medicineCode')}</span>
+                          <input
+                            value={item.medicineCode}
+                            onChange={(event) =>
+                              updateItem(item.id, 'medicineCode', event.target.value)
+                            }
+                            placeholder={t('common.optional')}
+                          />
+                        </label>
+
+                        <label>
+                          <span>{t('demand.patientGroup')}</span>
+                          <input
+                            value={item.patientGroup}
+                            onChange={(event) =>
+                              updateItem(item.id, 'patientGroup', event.target.value)
+                            }
+                            placeholder={t('demand.patientGroupPlaceholder')}
+                          />
+                        </label>
+                      </div>
+
+                      <label className="full-width">
+                        <span>{t('demand.itemNotes')}</span>
+                        <textarea
+                          value={item.notes}
+                          onChange={(event) =>
+                            updateItem(item.id, 'notes', event.target.value)
+                          }
+                          placeholder={t('demand.itemNotesPlaceholder')}
+                          rows={2}
+                        />
+                      </label>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1136,7 +1248,7 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
               onClick={resetForm}
               disabled={isSaving}
             >
-              Limpar
+              {t('demand.clear')}
             </button>
 
             <button
@@ -1145,7 +1257,7 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
               onClick={handleClose}
               disabled={isSaving}
             >
-              Fechar
+              {t('demand.close')}
             </button>
 
             <button
@@ -1153,7 +1265,7 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
               className="submit-button submit-button--danger"
               disabled={isSaving}
             >
-              {isSaving ? 'Salvando...' : 'Salvar demanda offline'}
+              {isSaving ? t('demand.saving') : t('demand.save')}
             </button>
           </footer>
         </form>

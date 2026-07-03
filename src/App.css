@@ -2128,3 +2128,154 @@ a {
     flex: 1;
   }
 }
+
+
+.emergency-form--simplified {
+  gap: 18px;
+}
+
+.emergency-helper {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 16px;
+  background: rgba(56, 189, 248, 0.08);
+  color: #bae6fd;
+  font-size: 0.92rem;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.emergency-helper--danger {
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(127, 29, 29, 0.22);
+  color: #fecaca;
+}
+
+.compact-form-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 12px;
+}
+
+.compact-form-grid--item {
+  grid-template-columns: 1.5fr 0.65fr 0.85fr;
+}
+
+.compact-form-grid--demand-item {
+  grid-template-columns: 1.4fr 0.65fr 0.8fr 1fr;
+}
+
+.compact-form-grid label,
+.details-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compact-form-grid label span,
+.details-card label span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.compact-form-grid input,
+.compact-form-grid select,
+.details-card input,
+.details-card select,
+.details-card textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.92);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+  padding: 12px 14px;
+}
+
+.quick-actions-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.geo-message {
+  color: #bae6fd;
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.details-toggle-button {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.74);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.details-card {
+  padding: 16px;
+  margin-top: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.54);
+}
+
+.details-card--danger {
+  border-color: rgba(248, 113, 113, 0.22);
+  background: rgba(127, 29, 29, 0.14);
+}
+
+.details-card--item {
+  margin-top: 14px;
+}
+
+.details-card h3 {
+  margin: 0 0 14px;
+  color: var(--text);
+  font-size: 0.98rem;
+}
+
+.fieldset-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 980px) {
+  .compact-form-grid,
+  .compact-form-grid--item,
+  .compact-form-grid--demand-item {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .compact-form-grid,
+  .compact-form-grid--item,
+  .compact-form-grid--demand-item {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions-row,
+  .fieldset-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quick-actions-row button,
+  .fieldset-actions button {
+    width: 100%;
+  }
+}
