@@ -696,7 +696,7 @@ export function OfflineStoragePanel() {
         </div>
       </div>
 
-      <div className="storage-actions">
+      {/* <div className="storage-actions">
         <button
           type="button"
           className="secondary-button"
@@ -723,7 +723,7 @@ export function OfflineStoragePanel() {
         >
           {t('storage.clear')}
         </button>
-      </div>
+      </div> */}
 
       {message && <p className="storage-message">{message}</p>}
     </section>

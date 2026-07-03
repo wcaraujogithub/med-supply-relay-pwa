@@ -1,7 +1,5 @@
-// import { useCallback, useEffect, useRef, useState } from 'react';
-// import {
-//   OFFLINE_STORAGE_CHANGED_EVENT
-// } from '../../db/localDb';
+// import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// import { OFFLINE_STORAGE_CHANGED_EVENT } from '../../db/localDb';
 // import type { SyncRunResult } from '../../db/localTypes';
 // import { syncPendingOfflineData } from '../../features/sync/syncService';
 
@@ -11,9 +9,10 @@
 //   isSyncing: boolean;
 //   lastResult: SyncRunResult | null;
 //   lastAttemptAt: string | null;
+//   nextSyncInSeconds: number;
 // };
 
-// const THREE_MINUTES_MS = 3 * 60 * 1000;
+// const CHECK_INTERVAL_SECONDS = 180;
 
 // export function useSyncEngine(
 //   isOnline: boolean,
@@ -22,7 +21,8 @@
 //   const [state, setState] = useState<SyncEngineState>({
 //     isSyncing: false,
 //     lastResult: null,
-//     lastAttemptAt: null
+//     lastAttemptAt: null,
+//     nextSyncInSeconds: CHECK_INTERVAL_SECONDS
 //   });
 
 //   const isEligible = isOnline && apiStatus === 'online';
@@ -32,12 +32,20 @@
 //     isEligibleRef.current = isEligible;
 //   }, [isEligible]);
 
+//   const resetCountdown = useCallback(() => {
+//     setState((current) => ({
+//       ...current,
+//       nextSyncInSeconds: CHECK_INTERVAL_SECONDS
+//     }));
+//   }, []);
+
 //   const syncNow = useCallback(
 //     async (reason: string = 'manual') => {
 //       if (!isEligibleRef.current) {
 //         const result: SyncRunResult = {
 //           status: 'skipped',
-//           message: 'Sincronização ignorada: dispositivo offline ou API indisponível.',
+//           message:
+//             'Sincronização ignorada: dispositivo offline ou API indisponível.',
 //           totalLocations: 0,
 //           totalSupplies: 0,
 //           totalDemands: 0,
@@ -48,11 +56,12 @@
 //           duplicateItems: 0
 //         };
 
-//         if (reason === 'manual') {
+//         if (reason === 'manual' || reason === 'manual-connection-check') {
 //           setState((current) => ({
 //             ...current,
 //             lastResult: result,
-//             lastAttemptAt: new Date().toISOString()
+//             lastAttemptAt: new Date().toISOString(),
+//             nextSyncInSeconds: CHECK_INTERVAL_SECONDS
 //           }));
 //         }
 
@@ -62,7 +71,8 @@
 //       setState((current) => ({
 //         ...current,
 //         isSyncing: true,
-//         lastAttemptAt: new Date().toISOString()
+//         lastAttemptAt: new Date().toISOString(),
+//         nextSyncInSeconds: CHECK_INTERVAL_SECONDS
 //       }));
 
 //       const result = await syncPendingOfflineData(reason);
@@ -72,14 +82,16 @@
 //           return {
 //             ...current,
 //             isSyncing: false,
-//             lastAttemptAt: new Date().toISOString()
+//             lastAttemptAt: new Date().toISOString(),
+//             nextSyncInSeconds: CHECK_INTERVAL_SECONDS
 //           };
 //         }
 
 //         return {
 //           isSyncing: false,
 //           lastResult: result,
-//           lastAttemptAt: new Date().toISOString()
+//           lastAttemptAt: new Date().toISOString(),
+//           nextSyncInSeconds: CHECK_INTERVAL_SECONDS
 //         };
 //       });
 
@@ -90,6 +102,7 @@
 
 //   useEffect(() => {
 //     if (!isEligible) {
+//       resetCountdown();
 //       return;
 //     }
 
@@ -100,21 +113,33 @@
 //     return () => {
 //       window.clearTimeout(timeoutId);
 //     };
-//   }, [isEligible, syncNow]);
+//   }, [isEligible, resetCountdown, syncNow]);
 
 //   useEffect(() => {
-//     if (!isEligible) {
-//       return;
-//     }
-
 //     const intervalId = window.setInterval(() => {
-//       void syncNow('interval-3-minutes');
-//     }, THREE_MINUTES_MS);
+//       setState((current) => {
+//         if (current.nextSyncInSeconds <= 1) {
+//           window.setTimeout(() => {
+//             void syncNow('interval-3-minutes');
+//           }, 0);
+
+//           return {
+//             ...current,
+//             nextSyncInSeconds: CHECK_INTERVAL_SECONDS
+//           };
+//         }
+
+//         return {
+//           ...current,
+//           nextSyncInSeconds: current.nextSyncInSeconds - 1
+//         };
+//       });
+//     }, 1000);
 
 //     return () => {
 //       window.clearInterval(intervalId);
 //     };
-//   }, [isEligible, syncNow]);
+//   }, [syncNow]);
 
 //   useEffect(() => {
 //     let timeoutId: number | null = null;
@@ -150,13 +175,21 @@
 //     };
 //   }, [syncNow]);
 
+//   const progressPercent = useMemo(() => {
+//     return Math.round(
+//       ((CHECK_INTERVAL_SECONDS - state.nextSyncInSeconds) /
+//         CHECK_INTERVAL_SECONDS) *
+//         100
+//     );
+//   }, [state.nextSyncInSeconds]);
+
 //   return {
 //     ...state,
 //     canSync: isEligible,
+//     progressPercent,
 //     syncNow
 //   };
 // }
-
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { OFFLINE_STORAGE_CHANGED_EVENT } from '../../db/localDb';
