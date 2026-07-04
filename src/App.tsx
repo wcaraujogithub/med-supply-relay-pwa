@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { API_ENDPOINTS } from './config/api';
 import { DemandFlowModal } from './features/demands/DemandFlowModal';
 import { OperationsPage } from './features/operations/OperationsPage';
 import { OfflineStoragePanel } from './features/storage/OfflineStoragePanel';
@@ -12,8 +11,14 @@ import { useApiHealth } from './shared/hooks/useApiHealth';
 import { useNetworkStatus } from './shared/hooks/useNetworkStatus';
 import { useSyncEngine } from './shared/hooks/useSyncEngine';
 import { SyncIssuesPanel } from './features/sync/SyncIssuesPanel';
+import { HelpPage } from './features/help/HelpPage';
+import {
+  LicenseNoticeModal,
+  shouldShowLicenseNotice
+} from './features/license/LicenseNoticeModal';
 
-type AppView = 'home' | 'operations';
+
+type AppView = 'home' | 'operations' | 'help';
 
 export default function App() {
   const { language, t } = useI18n();
@@ -25,6 +30,11 @@ export default function App() {
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [isSupplyModalOpen, setIsSupplyModalOpen] = useState(false);
   const [isDemandModalOpen, setIsDemandModalOpen] = useState(false);
+
+const [isLicenseModalOpen, setIsLicenseModalOpen] = useState(
+  () => shouldShowLicenseNotice()
+);
+
 
   const apiTone =
     apiHealth.status === 'online'
@@ -56,17 +66,46 @@ export default function App() {
       void syncEngine.syncNow('manual-connection-check');
     }, 300);
   }
+if (currentView === 'help') {
+  return (
+    <AppShell>
+      <HelpPage onBack={() => setCurrentView('home')} />
+
+      <LicenseNoticeModal
+        isOpen={isLicenseModalOpen}
+        onClose={() => setIsLicenseModalOpen(false)}
+        onOpenHelp={() => setCurrentView('help')}
+      />
+    </AppShell>
+  );
+}
+  // if (currentView === 'operations') {
+  //   return (
+  //     <AppShell>
+  //       <OperationsPage
+  //         canUseApi={deviceStatus.isOnline && apiHealth.status === 'online'}
+  //         onBack={() => setCurrentView('home')}
+  //       />
+  //     </AppShell>
+  //   );
+  // }
 
   if (currentView === 'operations') {
-    return (
-      <AppShell>
-        <OperationsPage
-          canUseApi={deviceStatus.isOnline && apiHealth.status === 'online'}
-          onBack={() => setCurrentView('home')}
-        />
-      </AppShell>
-    );
-  }
+  return (
+    <AppShell>
+      <OperationsPage
+        canUseApi={deviceStatus.isOnline && apiHealth.status === 'online'}
+        onBack={() => setCurrentView('home')}
+      />
+
+      <LicenseNoticeModal
+        isOpen={isLicenseModalOpen}
+        onClose={() => setIsLicenseModalOpen(false)}
+        onOpenHelp={() => setCurrentView('help')}
+      />
+    </AppShell>
+  );
+}
 
   return (
     <AppShell>
@@ -143,6 +182,42 @@ export default function App() {
         </div>
       </section>
 
+
+ <section className="contingency-panel">
+        {/* <h3>{t('contingency.title')}</h3> */}
+
+        <div className="link-grid">
+          {/* <button
+            type="button"
+            onClick={() => setCurrentView('operations')}
+          >
+            {t('contingency.matches')}
+          </button>
+
+          <a href={API_ENDPOINTS.exportMatchesTxt} target="_blank" rel="noreferrer">
+            {t('contingency.txt')}
+          </a>
+
+          <a href={API_ENDPOINTS.exportMatchesCsv} target="_blank" rel="noreferrer">
+            {t('contingency.csv')}
+          </a> */}
+
+          <button
+            type="button"
+            onClick={() => setCurrentView('help')}
+          >
+            {t('help.open')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsLicenseModalOpen(true)}
+          >
+            {t('license.open')}
+          </button>
+        </div>
+      </section>
+<br/>
       <OperatorSettingsPanel />
 
       <section className="action-grid" aria-label="Ações principais">
@@ -207,26 +282,7 @@ export default function App() {
         </section>
       )}
 
-      {/* <section className="contingency-panel">
-        <h3>{t('contingency.title')}</h3>
-
-        <div className="link-grid">
-          <button
-            type="button"
-            onClick={() => setCurrentView('operations')}
-          >
-            {t('contingency.matches')}
-          </button>
-
-          <a href={API_ENDPOINTS.exportMatchesTxt} target="_blank" rel="noreferrer">
-            {t('contingency.txt')}
-          </a>
-
-          <a href={API_ENDPOINTS.exportMatchesCsv} target="_blank" rel="noreferrer">
-            {t('contingency.csv')}
-          </a>
-        </div>
-      </section> */}
+     
 
 <br/> 
         <SyncIssuesPanel
@@ -258,6 +314,12 @@ export default function App() {
       <DemandFlowModal
         isOpen={isDemandModalOpen}
         onClose={() => setIsDemandModalOpen(false)}
+      />
+
+      <LicenseNoticeModal
+        isOpen={isLicenseModalOpen}
+        onClose={() => setIsLicenseModalOpen(false)}
+        onOpenHelp={() => setCurrentView('help')}
       />
     </AppShell>
   );

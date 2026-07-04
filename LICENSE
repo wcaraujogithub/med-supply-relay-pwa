@@ -1,4 +1,4 @@
-﻿MedSupply Relay PWA - Humanitarian Open Source License Notice
+﻿<!-- MedSupply Relay PWA - Humanitarian Open Source License Notice
 SPDX-License-Identifier: AGPL-3.0-or-later
 
 Copyright (c) 2026 Wesley Cordeiro de Araujo.
@@ -71,4 +71,20 @@ Full License Text:
 The full legal text of the GNU Affero General Public License version 3 is available at:
 https://www.gnu.org/licenses/agpl-3.0.html
 
-If a copy of the full AGPL-3.0 license text is required for distribution, include it with this frontend or obtain it from the official GNU website above.
+If a copy of the full AGPL-3.0 license text is required for distribution, include it with this frontend or obtain it from the official GNU website above. -->
+
+
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+
+MedSupply Relay PWA is licensed under the GNU Affero General Public License
+version 3 or later.
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+Copyright (C) 2026 Wesley Cordeiro de Araujo
+
+You should have received a copy of the GNU Affero General Public License
+along with this program. If not, see:
+
+https://www.gnu.org/licenses/agpl-3.0.html
