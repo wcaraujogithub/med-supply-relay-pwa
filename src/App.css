@@ -2755,3 +2755,35 @@ a {
     padding: 18px;
   }
 }
+
+/* css pagina do logs de erro */
+
+.sync-pagination {
+  display: grid;
+  grid-template-columns: minmax(100px, auto) 1fr minmax(100px, auto);
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.sync-pagination span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.sync-pagination .secondary-button {
+  min-height: 42px;
+}
+
+@media (max-width: 760px) {
+  .sync-pagination {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sync-pagination span {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}

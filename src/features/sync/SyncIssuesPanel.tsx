@@ -3,7 +3,12 @@
  * Copyright (C) 2026 Wesley Cordeiro de Araujo
  * See NOTICE for additional attribution and origin notices.
  */
-import { useEffect, useState } from 'react';
+
+import {
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 import {
   clearLocalSyncIssueLogs,
   discardLocalQueueItem,
@@ -12,6 +17,9 @@ import {
   retrySingleQueueItem,
   SYNC_ISSUES_UPDATED_EVENT
 } from '../../db/offlineSyncIssues';
+import {
+  formatAppDateTime
+} from '../../i18n/format';
 import { useI18n } from '../../i18n/I18nProvider';
 import type {
   SyncIssueSnapshot,
@@ -23,21 +31,95 @@ type SyncIssuesPanelProps = {
   onSyncNow: () => Promise<unknown> | unknown;
 };
 
-function formatDate(value?: string | null): string {
-  if (!value) {
-    return '-';
-  }
+const PAGE_SIZE = 5;
 
-  return new Date(value).toLocaleString();
-}
+export function SyncIssuesPanel({
+  onSyncNow
+}: SyncIssuesPanelProps) {
+  const {
+    language,
+    t
+  } = useI18n();
 
-export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
-  const { t } = useI18n();
+  const [
+    snapshot,
+    setSnapshot
+  ] = useState<SyncIssueSnapshot | null>(null);
 
-  const [snapshot, setSnapshot] = useState<SyncIssueSnapshot | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [
+    isLoading,
+    setIsLoading
+  ] = useState(false);
+
+  const [
+    isExpanded,
+    setIsExpanded
+  ] = useState(false);
+
+  const [
+    message,
+    setMessage
+  ] = useState<string | null>(null);
+
+  const [
+    failedPage,
+    setFailedPage
+  ] = useState(1);
+
+  const [
+    logPage,
+    setLogPage
+  ] = useState(1);
+
+  const failedPageCount = Math.max(
+    1,
+    Math.ceil(
+      (snapshot?.failedItems.length ?? 0) /
+      PAGE_SIZE
+    )
+  );
+
+  const logPageCount = Math.max(
+    1,
+    Math.ceil(
+      (snapshot?.logs.length ?? 0) /
+      PAGE_SIZE
+    )
+  );
+
+  const visibleFailedItems = useMemo(() => {
+    if (!snapshot) {
+      return [];
+    }
+
+    const start =
+      (failedPage - 1) * PAGE_SIZE;
+
+    return snapshot.failedItems.slice(
+      start,
+      start + PAGE_SIZE
+    );
+  }, [
+    failedPage,
+    snapshot
+  ]);
+
+  const visibleLogs = useMemo(() => {
+    if (!snapshot) {
+      return [];
+    }
+
+    const start =
+      (logPage - 1) * PAGE_SIZE;
+
+    return snapshot.logs.slice(
+      start,
+      start + PAGE_SIZE
+    );
+  }, [
+    logPage,
+    snapshot
+  ]);
 
   const hasIssues =
     snapshot !== null &&
@@ -52,8 +134,36 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
     setIsLoading(true);
 
     try {
-      const result = await getOfflineSyncIssueSnapshot();
+      const result =
+        await getOfflineSyncIssueSnapshot();
+
       setSnapshot(result);
+
+      setFailedPage((current) =>
+        Math.min(
+          current,
+          Math.max(
+            1,
+            Math.ceil(
+              result.failedItems.length /
+              PAGE_SIZE
+            )
+          )
+        )
+      );
+
+      setLogPage((current) =>
+        Math.min(
+          current,
+          Math.max(
+            1,
+            Math.ceil(
+              result.logs.length /
+              PAGE_SIZE
+            )
+          )
+        )
+      );
 
       if (
         result.failedTotal > 0 ||
@@ -64,7 +174,9 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
         setIsExpanded(true);
       }
     } catch {
-      setMessage(t('syncIssues.reloadFail'));
+      setMessage(
+        t('syncIssues.reloadFail')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -74,12 +186,22 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
     setMessage(null);
 
     try {
-      const count = await retryAllFailedQueueItems();
-      setMessage(t('syncIssues.retryAllOk', { count }));
+      const count =
+        await retryAllFailedQueueItems();
+
+      setMessage(
+        t(
+          'syncIssues.retryAllOk',
+          { count }
+        )
+      );
+
       await onSyncNow();
       await loadSnapshot();
     } catch {
-      setMessage(t('syncIssues.retryFail'));
+      setMessage(
+        t('syncIssues.retryFail')
+      );
     }
   }
 
@@ -90,12 +212,21 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
     setMessage(null);
 
     try {
-      await retrySingleQueueItem(kind, clientOperationId);
-      setMessage(t('syncIssues.retryOneOk'));
+      await retrySingleQueueItem(
+        kind,
+        clientOperationId
+      );
+
+      setMessage(
+        t('syncIssues.retryOneOk')
+      );
+
       await onSyncNow();
       await loadSnapshot();
     } catch {
-      setMessage(t('syncIssues.retryFail'));
+      setMessage(
+        t('syncIssues.retryFail')
+      );
     }
   }
 
@@ -103,7 +234,9 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
     kind: SyncQueueKind,
     clientOperationId: string
   ): Promise<void> {
-    const confirmed = window.confirm(t('syncIssues.confirmDiscard'));
+    const confirmed = window.confirm(
+      t('syncIssues.confirmDiscard')
+    );
 
     if (!confirmed) {
       return;
@@ -112,52 +245,92 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
     setMessage(null);
 
     try {
-      await discardLocalQueueItem(kind, clientOperationId);
-      setMessage(t('syncIssues.discardOk'));
+      await discardLocalQueueItem(
+        kind,
+        clientOperationId
+      );
+
+      setMessage(
+        t('syncIssues.discardOk')
+      );
+
       await loadSnapshot();
     } catch {
-      setMessage(t('syncIssues.discardFail'));
+      setMessage(
+        t('syncIssues.discardFail')
+      );
     }
   }
 
-  async function handleClearLogs(): Promise<void> {
+  async function handleClearLogs():
+  Promise<void> {
     setMessage(null);
 
     try {
       await clearLocalSyncIssueLogs();
-      setMessage(t('syncIssues.clearOk'));
+
+      setLogPage(1);
+
+      setMessage(
+        t('syncIssues.clearOk')
+      );
+
       await loadSnapshot();
     } catch {
-      setMessage(t('syncIssues.clearFail'));
+      setMessage(
+        t('syncIssues.clearFail')
+      );
     }
   }
 
-  function kindLabel(kind: SyncQueueKind): string {
+  function kindLabel(
+    kind: SyncQueueKind
+  ): string {
     switch (kind) {
       case 'location':
         return t('syncIssues.location');
+
       case 'supply':
         return t('syncIssues.supply');
+
       case 'demand':
         return t('syncIssues.demand');
+
       default:
         return t('syncIssues.unknown');
     }
   }
 
-  function statusLabel(status: SyncQueueStatus): string {
+  function statusLabel(
+    status: SyncQueueStatus
+  ): string {
     switch (status) {
       case 'Pending':
         return t('syncIssues.statusPending');
+
       case 'Syncing':
         return t('syncIssues.statusSyncing');
+
       case 'Synced':
         return t('syncIssues.statusSynced');
+
       case 'Failed':
         return t('syncIssues.statusFailed');
+
       default:
         return String(status);
     }
+  }
+
+  function logKindLabel(
+    kind: string
+  ): string {
+    const key = `syncIssues.kind.${kind}`;
+    const translated = t(key);
+
+    return translated === key
+      ? kind
+      : translated;
   }
 
   useEffect(() => {
@@ -167,22 +340,33 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
       void loadSnapshot();
     }
 
-    window.addEventListener(SYNC_ISSUES_UPDATED_EVENT, handleUpdated);
+    window.addEventListener(
+      SYNC_ISSUES_UPDATED_EVENT,
+      handleUpdated
+    );
 
     return () => {
-      window.removeEventListener(SYNC_ISSUES_UPDATED_EVENT, handleUpdated);
+      window.removeEventListener(
+        SYNC_ISSUES_UPDATED_EVENT,
+        handleUpdated
+      );
     };
   }, []);
 
   return (
     <section
       className={`sync-issues-panel ${
-        hasIssues ? 'sync-issues-panel--warning' : ''
+        hasIssues
+          ? 'sync-issues-panel--warning'
+          : ''
       }`}
     >
       <div className="section-title-row">
         <div>
-          <h3>{t('syncIssues.title')}</h3>
+          <h3>
+            {t('syncIssues.title')}
+          </h3>
+
           <p>
             {hasIssues
               ? t('syncIssues.description')
@@ -193,36 +377,89 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
         <button
           type="button"
           className="secondary-button"
-          onClick={() => setIsExpanded((current) => !current)}
+          onClick={() =>
+            setIsExpanded((current) => !current)
+          }
         >
-          {isExpanded ? t('common.hideDetails') : t('common.showDetails')}
+          {isExpanded
+            ? t('common.hideDetails')
+            : t('common.showDetails')}
         </button>
       </div>
 
       <div className="sync-issues-grid">
         <div>
-          <strong>{snapshot?.pendingTotal ?? 0}</strong>
-          <span>{t('syncIssues.pending')}</span>
+          <strong>
+            {snapshot?.pendingTotal ?? 0}
+          </strong>
+
+          <span>
+            {t('syncIssues.pending')}
+          </span>
         </div>
 
-        <div className={snapshot?.failedTotal ? 'danger' : ''}>
-          <strong>{snapshot?.failedTotal ?? 0}</strong>
-          <span>{t('syncIssues.failed')}</span>
+        <div
+          className={
+            snapshot?.failedTotal
+              ? 'danger'
+              : ''
+          }
+        >
+          <strong>
+            {snapshot?.failedTotal ?? 0}
+          </strong>
+
+          <span>
+            {t('syncIssues.failed')}
+          </span>
         </div>
 
-        <div className={snapshot?.rejectedTotal ? 'danger' : ''}>
-          <strong>{snapshot?.rejectedTotal ?? 0}</strong>
-          <span>{t('syncIssues.rejected')}</span>
+        <div
+          className={
+            snapshot?.rejectedTotal
+              ? 'danger'
+              : ''
+          }
+        >
+          <strong>
+            {snapshot?.rejectedTotal ?? 0}
+          </strong>
+
+          <span>
+            {t('syncIssues.rejected')}
+          </span>
         </div>
 
-        <div className={snapshot?.duplicateTotal ? 'warning' : ''}>
-          <strong>{snapshot?.duplicateTotal ?? 0}</strong>
-          <span>{t('syncIssues.duplicates')}</span>
+        <div
+          className={
+            snapshot?.duplicateTotal
+              ? 'warning'
+              : ''
+          }
+        >
+          <strong>
+            {snapshot?.duplicateTotal ?? 0}
+          </strong>
+
+          <span>
+            {t('syncIssues.duplicates')}
+          </span>
         </div>
 
-        <div className={snapshot?.warningTotal ? 'warning' : ''}>
-          <strong>{snapshot?.warningTotal ?? 0}</strong>
-          <span>{t('syncIssues.warnings')}</span>
+        <div
+          className={
+            snapshot?.warningTotal
+              ? 'warning'
+              : ''
+          }
+        >
+          <strong>
+            {snapshot?.warningTotal ?? 0}
+          </strong>
+
+          <span>
+            {t('syncIssues.warnings')}
+          </span>
         </div>
       </div>
 
@@ -231,7 +468,9 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
           type="button"
           className="secondary-button"
           disabled={isLoading}
-          onClick={() => void loadSnapshot()}
+          onClick={() =>
+            void loadSnapshot()
+          }
         >
           {t('syncIssues.refresh')}
         </button>
@@ -239,8 +478,14 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
         <button
           type="button"
           className="secondary-button"
-          disabled={isLoading || !snapshot || snapshot.failedTotal === 0}
-          onClick={() => void handleRetryAll()}
+          disabled={
+            isLoading ||
+            !snapshot ||
+            snapshot.failedTotal === 0
+          }
+          onClick={() =>
+            void handleRetryAll()
+          }
         >
           {t('syncIssues.retryAll')}
         </button>
@@ -249,7 +494,9 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
           type="button"
           className="submit-button"
           disabled={isLoading}
-          onClick={() => void onSyncNow()}
+          onClick={() =>
+            void onSyncNow()
+          }
         >
           {t('syncIssues.syncNow')}
         </button>
@@ -257,73 +504,143 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
         <button
           type="button"
           className="secondary-button secondary-button--danger"
-          disabled={isLoading || !snapshot || snapshot.logs.length === 0}
-          onClick={() => void handleClearLogs()}
+          disabled={
+            isLoading ||
+            !snapshot ||
+            snapshot.logs.length === 0
+          }
+          onClick={() =>
+            void handleClearLogs()
+          }
         >
           {t('syncIssues.clearLogs')}
         </button>
       </div>
 
-      {message && <p className="storage-message">{message}</p>}
+      {message && (
+        <p className="storage-message">
+          {message}
+        </p>
+      )}
 
       {isExpanded && (
         <div className="sync-issues-details">
           <section>
-            <h4>{t('syncIssues.failedQueue')}</h4>
+            <h4>
+              {t('syncIssues.failedQueue')}
+            </h4>
 
-            {snapshot && snapshot.failedItems.length > 0 ? (
-              <div className="sync-issue-list">
-                {snapshot.failedItems.map((item) => (
-                  <article
-                    className="sync-issue-card"
-                    key={`${item.kind}-${item.clientOperationId}`}
+            {snapshot &&
+            snapshot.failedItems.length > 0 ? (
+              <>
+                <div className="sync-issue-list">
+                  {visibleFailedItems.map(
+                    (item) => (
+                      <article
+                        className="sync-issue-card"
+                        key={
+                          `${item.kind}-${item.clientOperationId}`
+                        }
+                      >
+                        <div>
+                          <span className="sync-issue-kind">
+                            {kindLabel(item.kind)}
+                          </span>
+
+                          <strong>
+                            {item.title}
+                          </strong>
+
+                          <small>
+                            {item.subtitle}
+                          </small>
+
+                          {item.error && (
+                            <p className="sync-issue-error">
+                              {item.error}
+                            </p>
+                          )}
+
+                          <small>
+                            {statusLabel(item.status)}
+                          </small>
+                        </div>
+
+                        <div className="sync-issue-card-actions">
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() =>
+                              void handleRetryOne(
+                                item.kind,
+                                item.clientOperationId
+                              )
+                            }
+                          >
+                            {t('syncIssues.retry')}
+                          </button>
+
+                          <button
+                            type="button"
+                            className="secondary-button secondary-button--danger"
+                            onClick={() =>
+                              void handleDiscard(
+                                item.kind,
+                                item.clientOperationId
+                              )
+                            }
+                          >
+                            {t('syncIssues.discard')}
+                          </button>
+                        </div>
+                      </article>
+                    )
+                  )}
+                </div>
+
+                <div className="sync-pagination">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    disabled={failedPage <= 1}
+                    onClick={() =>
+                      setFailedPage((current) =>
+                        Math.max(1, current - 1)
+                      )
+                    }
                   >
-                    <div>
-                      <span className="sync-issue-kind">
-                        {kindLabel(item.kind)}
-                      </span>
+                    {t('syncIssues.previous')}
+                  </button>
 
-                      <strong>{item.title}</strong>
+                  <span>
+                    {t(
+                      'syncIssues.page',
+                      {
+                        current: failedPage,
+                        total: failedPageCount
+                      }
+                    )}
+                  </span>
 
-                      <small>{item.subtitle}</small>
-
-                      {item.error && (
-                        <p className="sync-issue-error">{item.error}</p>
-                      )}
-
-                      <small>{statusLabel(item.status)}</small>
-                    </div>
-
-                    <div className="sync-issue-card-actions">
-                      <button
-                        type="button"
-                        className="secondary-button"
-                        onClick={() =>
-                          void handleRetryOne(
-                            item.kind,
-                            item.clientOperationId
-                          )
-                        }
-                      >
-                        {t('syncIssues.retry')}
-                      </button>
-
-                      <button
-                        type="button"
-                        className="secondary-button secondary-button--danger"
-                        onClick={() =>
-                          void handleDiscard(
-                            item.kind,
-                            item.clientOperationId
-                          )
-                        }
-                      >
-                        {t('syncIssues.discard')}
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    disabled={
+                      failedPage >= failedPageCount
+                    }
+                    onClick={() =>
+                      setFailedPage((current) =>
+                        Math.min(
+                          failedPageCount,
+                          current + 1
+                        )
+                      )
+                    }
+                  >
+                    {t('syncIssues.next')}
+                  </button>
+                </div>
+              </>
             ) : (
               <p className="sync-issue-empty">
                 {t('syncIssues.noFailedItems')}
@@ -332,30 +649,98 @@ export function SyncIssuesPanel({ onSyncNow }: SyncIssuesPanelProps) {
           </section>
 
           <section>
-            <h4>{t('syncIssues.lastLogs')}</h4>
+            <h4>
+              {t('syncIssues.lastLogs')}
+            </h4>
 
-            {snapshot && snapshot.logs.length > 0 ? (
-              <div className="sync-log-list">
-                {snapshot.logs.map((log) => (
-                  <article
-                    className={`sync-log-card sync-log-card--${log.kind}`}
-                    key={`${log.localId ?? log.createdAtLocal}-${log.message}`}
+            {snapshot &&
+            snapshot.logs.length > 0 ? (
+              <>
+                <div className="sync-log-list">
+                  {visibleLogs.map((log) => (
+                    <article
+                      className={
+                        `sync-log-card sync-log-card--${log.kind}`
+                      }
+                      key={
+                        `${log.localId ?? log.createdAtLocal}-${log.message}`
+                      }
+                    >
+                      <div>
+                        <span>
+                          {logKindLabel(log.kind)}
+                        </span>
+
+                        <strong>
+                          {log.message}
+                        </strong>
+
+                        <small>
+                          {formatAppDateTime(
+                            log.createdAtLocal,
+                            language
+                          )}
+                        </small>
+                      </div>
+
+                      {log.metadataJson && (
+                        <details>
+                          <summary>
+                            metadata
+                          </summary>
+
+                          <pre>
+                            {log.metadataJson}
+                          </pre>
+                        </details>
+                      )}
+                    </article>
+                  ))}
+                </div>
+
+                <div className="sync-pagination">
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    disabled={logPage <= 1}
+                    onClick={() =>
+                      setLogPage((current) =>
+                        Math.max(1, current - 1)
+                      )
+                    }
                   >
-                    <div>
-                      <span>{log.kind}</span>
-                      <strong>{log.message}</strong>
-                      <small>{formatDate(log.createdAtLocal)}</small>
-                    </div>
+                    {t('syncIssues.previous')}
+                  </button>
 
-                    {log.metadataJson && (
-                      <details>
-                        <summary>metadata</summary>
-                        <pre>{log.metadataJson}</pre>
-                      </details>
+                  <span>
+                    {t(
+                      'syncIssues.page',
+                      {
+                        current: logPage,
+                        total: logPageCount
+                      }
                     )}
-                  </article>
-                ))}
-              </div>
+                  </span>
+
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    disabled={
+                      logPage >= logPageCount
+                    }
+                    onClick={() =>
+                      setLogPage((current) =>
+                        Math.min(
+                          logPageCount,
+                          current + 1
+                        )
+                      )
+                    }
+                  >
+                    {t('syncIssues.next')}
+                  </button>
+                </div>
+              </>
             ) : (
               <p className="sync-issue-empty">
                 {t('syncIssues.noLogs')}

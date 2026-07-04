@@ -22,6 +22,7 @@ import {
   demandPriorityOptions,
   unitOptions
 } from '../forms/emergencyFormOptions';
+import { createClientId } from '../../db/deviceIdentity';
 
 type DemandFlowModalProps = {
   isOpen: boolean;
@@ -41,7 +42,7 @@ type DemandFormItem = {
 
 function createEmptyDemandItem(): DemandFormItem {
   return {
-    id: crypto.randomUUID(),
+    id: createClientId(),
     medicineName: '',
     medicineCode: '',
     requestedQuantity: '',

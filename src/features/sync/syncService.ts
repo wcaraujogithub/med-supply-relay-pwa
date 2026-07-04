@@ -1,9 +1,6 @@
-/*
- * SPDX-License-Identifier: AGPL-3.0-or-later
- * Copyright (C) 2026 Wesley Cordeiro de Araujo
- * See NOTICE for additional attribution and origin notices.
- */
-
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Wesley Cordeiro de Araujo
+// See NOTICE for additional attribution and origin notices.
 
 import { API_ENDPOINTS } from '../../config/api';
 import {
@@ -14,6 +11,7 @@ import {
   markPayloadItemsAsSyncing
 } from '../../db/offlineQueue';
 import {
+  recordSyncFailure,
   recordSyncResponseIssues,
   SYNC_ISSUES_UPDATED_EVENT
 } from '../../db/offlineSyncIssues';
@@ -23,6 +21,27 @@ import type {
 } from '../../db/localTypes';
 
 let currentSyncPromise: Promise<SyncRunResult> | null = null;
+
+type ApiFailureInfo = {
+  userMessage: string;
+  technicalMessage: string;
+  metadata: {
+    failureType: 'http';
+    httpStatus: number;
+    problemType?: string;
+    problemTitle?: string;
+    traceId?: string;
+  };
+};
+
+type ProblemDetailsPayload = {
+  type?: unknown;
+  title?: unknown;
+  status?: unknown;
+  detail?: unknown;
+  traceId?: unknown;
+  extensions?: unknown;
+};
 
 export function syncPendingOfflineData(
   reason: string
@@ -58,8 +77,14 @@ async function runSync(reason: string): Promise<SyncRunResult> {
     };
   }
 
+  const payloadTotal =
+    payload.locations.length +
+    payload.supplies.length +
+    payload.demands.length;
+
   await createLocalSyncBatch(payload);
   await markPayloadItemsAsSyncing(payload);
+
   notifySyncIssuesUpdated();
 
   try {
@@ -74,25 +99,26 @@ async function runSync(reason: string): Promise<SyncRunResult> {
     });
 
     if (!response.ok) {
-      const errorText = await safeReadText(response);
-      const message = errorText || `API returned HTTP ${response.status}.`;
+      const failure = await readApiFailure(response);
 
-      await markPayloadItemsAsFailed(payload, message);
+      await markPayloadItemsAsFailed(
+        payload,
+        failure.technicalMessage
+      );
 
-      await safeRecordSyncIssues({
-        status: 'failed',
-        rejectedItems:
-          payload.locations.length +
-          payload.supplies.length +
-          payload.demands.length,
-        warnings: [
-          `HTTP ${response.status}: ${message}`
-        ]
-      });
+      await safeRecordSyncFailure(
+        failure.userMessage,
+        {
+          ...failure.metadata,
+          syncReason: reason,
+          clientBatchId: payload.clientBatchId,
+          affectedItems: payloadTotal
+        }
+      );
 
       return {
         status: 'failed',
-        message: `Falha ao sincronizar: ${message}`,
+        message: failure.userMessage,
         clientBatchId: payload.clientBatchId,
         totalLocations: payload.locations.length,
         totalSupplies: payload.supplies.length,
@@ -100,97 +126,133 @@ async function runSync(reason: string): Promise<SyncRunResult> {
         acceptedLocations: 0,
         acceptedSupplies: 0,
         acceptedDemands: 0,
-        rejectedItems:
-          payload.locations.length +
-          payload.supplies.length +
-          payload.demands.length,
+
+        // Infrastructure failure is not a business rejection.
+        rejectedItems: 0,
         duplicateItems: 0
       };
     }
 
     const data = (await response.json()) as OfflineSyncBatchResponse;
 
+    const rejectionCount = Array.isArray(data.rejections)
+      ? data.rejections.length
+      : Number(data.rejectedItems ?? 0) || 0;
+
     const isPartial =
       data.status?.toLowerCase() === 'partiallyaccepted' ||
       data.status?.toLowerCase() === 'partially_accepted' ||
-      data.rejectedItems > 0;
+      rejectionCount > 0;
 
-    const isFailed = data.status?.toLowerCase() === 'failed';
+    const isFailed =
+      data.status?.toLowerCase() === 'failed';
 
     if (isFailed) {
-      const message = 'API rejected the entire sync batch.';
+      const technicalMessage =
+        'The sync API rejected or failed the entire sync batch.';
 
-      await markPayloadItemsAsFailed(payload, message);
+      await markPayloadItemsAsFailed(
+        payload,
+        technicalMessage
+      );
 
-      await safeRecordSyncIssues({
-        status: data.status,
-        alreadyProcessed: data.alreadyProcessed,
-        duplicateItems: data.duplicateItems ?? 0,
-        rejectedItems:
-          data.rejectedItems ??
-          payload.locations.length +
-            payload.supplies.length +
-            payload.demands.length,
-        warnings: [
-          'API rejected the entire sync batch.'
-        ],
-        rejections: data.rejections ?? []
-      });
+      await safeRecordSyncResponseIssues(data);
+
+      if (rejectionCount === 0) {
+        await safeRecordSyncFailure(
+          'A API não conseguiu processar o lote de sincronização.',
+          {
+            failureType: 'api-batch',
+            status: data.status ?? 'failed',
+            syncReason: reason,
+            clientBatchId: payload.clientBatchId,
+            affectedItems: payloadTotal
+          }
+        );
+      }
 
       return {
         status: 'failed',
-        message: 'A API rejeitou todo o lote de sincronização.',
+        message:
+          rejectionCount > 0
+            ? `A API rejeitou ${rejectionCount} item(ns) do lote de sincronização.`
+            : 'A API não conseguiu processar o lote de sincronização.',
         clientBatchId: payload.clientBatchId,
-        totalLocations: data.totalLocations ?? payload.locations.length,
-        totalSupplies: data.totalSupplies ?? payload.supplies.length,
-        totalDemands: data.totalDemands ?? payload.demands.length,
-        acceptedLocations: data.acceptedLocations ?? 0,
-        acceptedSupplies: data.acceptedSupplies ?? 0,
-        acceptedDemands: data.acceptedDemands ?? 0,
-        rejectedItems: data.rejectedItems ?? 0,
-        duplicateItems: data.duplicateItems ?? 0
+        totalLocations:
+          data.totalLocations ?? payload.locations.length,
+        totalSupplies:
+          data.totalSupplies ?? payload.supplies.length,
+        totalDemands:
+          data.totalDemands ?? payload.demands.length,
+        acceptedLocations:
+          data.acceptedLocations ?? 0,
+        acceptedSupplies:
+          data.acceptedSupplies ?? 0,
+        acceptedDemands:
+          data.acceptedDemands ?? 0,
+        rejectedItems: rejectionCount,
+        duplicateItems:
+          data.duplicateItems ?? 0
       };
     }
 
-    await applySyncSuccess(payload, data.rejections ?? [], isPartial);
+    await applySyncSuccess(
+      payload,
+      data.rejections ?? [],
+      isPartial
+    );
 
-    await safeRecordSyncIssues(data);
+    await safeRecordSyncResponseIssues(data);
 
     return {
       status: isPartial ? 'partial' : 'success',
       message: buildSuccessMessage(data, isPartial),
-      clientBatchId: data.clientBatchId ?? payload.clientBatchId,
-      totalLocations: data.totalLocations ?? payload.locations.length,
-      totalSupplies: data.totalSupplies ?? payload.supplies.length,
-      totalDemands: data.totalDemands ?? payload.demands.length,
-      acceptedLocations: data.acceptedLocations ?? 0,
-      acceptedSupplies: data.acceptedSupplies ?? 0,
-      acceptedDemands: data.acceptedDemands ?? 0,
-      rejectedItems: data.rejectedItems ?? 0,
-      duplicateItems: data.duplicateItems ?? 0
+      clientBatchId:
+        data.clientBatchId ?? payload.clientBatchId,
+      totalLocations:
+        data.totalLocations ?? payload.locations.length,
+      totalSupplies:
+        data.totalSupplies ?? payload.supplies.length,
+      totalDemands:
+        data.totalDemands ?? payload.demands.length,
+      acceptedLocations:
+        data.acceptedLocations ?? 0,
+      acceptedSupplies:
+        data.acceptedSupplies ?? 0,
+      acceptedDemands:
+        data.acceptedDemands ?? 0,
+      rejectedItems: rejectionCount,
+      duplicateItems:
+        data.duplicateItems ?? 0
     };
   } catch (error) {
-    const message =
+    const technicalMessage =
       error instanceof Error
-        ? error.message
-        : 'Erro desconhecido durante sincronização.';
+        ? sanitizeTechnicalMessage(error.message)
+        : 'Unknown synchronization error.';
 
-    await markPayloadItemsAsFailed(payload, message);
+    const userMessage =
+      'Não foi possível sincronizar com o servidor. Os dados continuam salvos neste dispositivo. Tente novamente quando o serviço estiver disponível.';
 
-    await safeRecordSyncIssues({
-      status: 'failed',
-      rejectedItems:
-        payload.locations.length +
-        payload.supplies.length +
-        payload.demands.length,
-      warnings: [
-        message
-      ]
-    });
+    await markPayloadItemsAsFailed(
+      payload,
+      technicalMessage
+    );
+
+    await safeRecordSyncFailure(
+      userMessage,
+      {
+        failureType: 'network',
+        syncReason: reason,
+        clientBatchId: payload.clientBatchId,
+        affectedItems: payloadTotal,
+        technicalMessage
+      }
+    );
 
     return {
       status: 'failed',
-      message: `Falha ao sincronizar: ${message}`,
+      message: userMessage,
       clientBatchId: payload.clientBatchId,
       totalLocations: payload.locations.length,
       totalSupplies: payload.supplies.length,
@@ -198,12 +260,13 @@ async function runSync(reason: string): Promise<SyncRunResult> {
       acceptedLocations: 0,
       acceptedSupplies: 0,
       acceptedDemands: 0,
-      rejectedItems:
-        payload.locations.length +
-        payload.supplies.length +
-        payload.demands.length,
+
+      // Network/infrastructure failures are not rejections.
+      rejectedItems: 0,
       duplicateItems: 0
     };
+  } finally {
+    notifySyncIssuesUpdated();
   }
 }
 
@@ -222,22 +285,191 @@ function buildSuccessMessage(
   return `Sincronização concluída: ${data.acceptedLocations} locais, ${data.acceptedSupplies} ofertas e ${data.acceptedDemands} demandas enviadas.`;
 }
 
-async function safeReadText(response: Response): Promise<string | null> {
+async function readApiFailure(
+  response: Response
+): Promise<ApiFailureInfo> {
+  const fallbackUserMessage = buildHttpUserMessage(
+    response.status
+  );
+
+  const fallbackTechnicalMessage =
+    `Sync API returned HTTP ${response.status}.`;
+
   try {
-    return await response.text();
+    const rawText = await response.text();
+
+    if (!rawText.trim()) {
+      return {
+        userMessage: fallbackUserMessage,
+        technicalMessage: fallbackTechnicalMessage,
+        metadata: {
+          failureType: 'http',
+          httpStatus: response.status
+        }
+      };
+    }
+
+    const parsed = safeParseJson(rawText);
+
+    if (!parsed) {
+      return {
+        userMessage: fallbackUserMessage,
+        technicalMessage: fallbackTechnicalMessage,
+        metadata: {
+          failureType: 'http',
+          httpStatus: response.status
+        }
+      };
+    }
+
+    const problem = parsed as ProblemDetailsPayload;
+
+    const problemType = getStringValue(problem.type);
+    const problemTitle = getStringValue(problem.title);
+
+    const traceId =
+      getStringValue(problem.traceId) ??
+      findTraceId(problem.extensions);
+
+    return {
+      userMessage: fallbackUserMessage,
+      technicalMessage:
+        problemTitle
+          ? `HTTP ${response.status}: ${sanitizeTechnicalMessage(problemTitle)}`
+          : fallbackTechnicalMessage,
+      metadata: {
+        failureType: 'http',
+        httpStatus: response.status,
+        problemType,
+        problemTitle:
+          problemTitle
+            ? sanitizeTechnicalMessage(problemTitle)
+            : undefined,
+        traceId
+      }
+    };
+  } catch {
+    return {
+      userMessage: fallbackUserMessage,
+      technicalMessage: fallbackTechnicalMessage,
+      metadata: {
+        failureType: 'http',
+        httpStatus: response.status
+      }
+    };
+  }
+}
+
+function buildHttpUserMessage(status: number): string {
+  if (status >= 500) {
+    return 'O servidor está temporariamente indisponível para sincronização. Os dados continuam salvos neste dispositivo. Tente novamente em alguns instantes.';
+  }
+
+  if (status === 408 || status === 504) {
+    return 'A sincronização demorou mais que o esperado. Os dados continuam salvos neste dispositivo. Tente novamente quando a conexão estiver estável.';
+  }
+
+  if (status === 429) {
+    return 'O servidor recebeu muitas solicitações. Os dados continuam salvos neste dispositivo. Aguarde alguns instantes e tente novamente.';
+  }
+
+  return `Não foi possível sincronizar com o servidor (HTTP ${status}). Os dados continuam salvos neste dispositivo.`;
+}
+
+function safeParseJson(
+  value: string
+): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(value);
+
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      !Array.isArray(parsed)
+    ) {
+      return parsed as Record<string, unknown>;
+    }
+
+    return null;
   } catch {
     return null;
   }
 }
 
-async function safeRecordSyncIssues(
+function getStringValue(
+  value: unknown
+): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+
+  return normalized || undefined;
+}
+
+function findTraceId(
+  extensions: unknown
+): string | undefined {
+  if (
+    !extensions ||
+    typeof extensions !== 'object' ||
+    Array.isArray(extensions)
+  ) {
+    return undefined;
+  }
+
+  const record = extensions as Record<string, unknown>;
+
+  return (
+    getStringValue(record.traceId) ??
+    getStringValue(record.trace_id) ??
+    getStringValue(record.requestId) ??
+    getStringValue(record.request_id)
+  );
+}
+
+function sanitizeTechnicalMessage(
+  value: string
+): string {
+  const compact = value
+    .replace(/\r/g, ' ')
+    .replace(/\n/g, ' ')
+    .replace(/\t/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (compact.length <= 240) {
+    return compact;
+  }
+
+  return `${compact.slice(0, 237)}...`;
+}
+
+async function safeRecordSyncResponseIssues(
   response: Parameters<typeof recordSyncResponseIssues>[0]
 ): Promise<void> {
   try {
     await recordSyncResponseIssues(response);
   } catch (error) {
-    console.warn('Failed to record sync issues locally.', error);
-    notifySyncIssuesUpdated();
+    console.warn(
+      'Failed to record sync response issues locally.',
+      error
+    );
+  }
+}
+
+async function safeRecordSyncFailure(
+  message: string,
+  metadata?: unknown
+): Promise<void> {
+  try {
+    await recordSyncFailure(message, metadata);
+  } catch (error) {
+    console.warn(
+      'Failed to record sync failure locally.',
+      error
+    );
   }
 }
 

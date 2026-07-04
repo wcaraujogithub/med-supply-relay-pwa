@@ -378,7 +378,7 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
     'syncIssues.syncNow': 'Sincronizar ahora',
     'syncIssues.clearLogs': 'Limpiar logs',
     'syncIssues.failedQueue': 'Elementos con falla',
-    'syncIssues.lastLogs': 'Últimos avisos/rechazos',
+'syncIssues.lastLogs': 'Últimos eventos de sincronización',
     'syncIssues.noFailedItems': 'No hay elementos con falla local.',
     'syncIssues.noLogs': 'No hay avisos o rechazos registrados.',
     'syncIssues.retry': 'Reintentar',
@@ -464,9 +464,20 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
 'license.sameText': 'Modificaciones y trabajos derivados deben preservar la misma licencia compatible, manteniendo el código abierto.',
 'license.noWarrantyTitle': 'Sin garantía',
 'license.noWarrantyText': 'El software se entrega sin garantía. En emergencia, debe ser usado con coordinación local y validación responsable.',
-'license.readMore': 'Ver licencia completa y README'
-    
-  },
+'license.readMore': 'Ver licencia completa y README',
+
+'syncIssues.previous': 'Anterior',
+'syncIssues.next': 'Siguiente',
+'syncIssues.page': 'Página {current} de {total}',
+
+'syncIssues.kind.failed': 'FALLA',
+'syncIssues.kind.rejected': 'RECHAZADO',
+'syncIssues.kind.duplicate': 'DUPLICADO',
+'syncIssues.kind.warning': 'AVISO',
+'syncIssues.kind.info': 'INFO',
+  
+  
+},
 
   pt: {
     'app.name': 'MedSupply Relay',
@@ -837,7 +848,7 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
 'syncIssues.syncNow': 'Sincronizar agora',
 'syncIssues.clearLogs': 'Limpar logs',
 'syncIssues.failedQueue': 'Itens com falha',
-'syncIssues.lastLogs': 'Últimos avisos/rejeições',
+'syncIssues.lastLogs': 'Últimos eventos de sincronização',
 'syncIssues.noFailedItems': 'Não há itens com falha local.',
 'syncIssues.noLogs': 'Não há avisos ou rejeições registrados.',
 'syncIssues.retry': 'Reenviar',
@@ -924,6 +935,18 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
 'license.sameText': 'Modificações e trabalhos derivados devem preservar a mesma licença compatível, mantendo o código aberto.',
 'license.noWarrantyTitle': 'Sem garantia',
 'license.noWarrantyText': 'O software é entregue sem garantia. Em emergência, deve ser usado com coordenação local e validação responsável.',
-'license.readMore': 'Ver licença completa e README'
+'license.readMore': 'Ver licença completa e README',
+
+
+'syncIssues.previous': 'Anterior',
+'syncIssues.next': 'Próxima',
+'syncIssues.page': 'Página {current} de {total}',
+
+'syncIssues.kind.failed': 'FALHA',
+'syncIssues.kind.rejected': 'REJEITADO',
+'syncIssues.kind.duplicate': 'DUPLICADO',
+'syncIssues.kind.warning': 'AVISO',
+'syncIssues.kind.info': 'INFO',
+
   }
 };

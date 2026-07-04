@@ -18,6 +18,7 @@ import {
   supplyLocationTypes,
   unitOptions
 } from '../forms/emergencyFormOptions';
+import { createClientId } from '../../db/deviceIdentity';
 
 type SupplyFlowModalProps = {
   isOpen: boolean;
@@ -37,7 +38,7 @@ type SupplyFormItem = {
 
 function createEmptySupplyItem(): SupplyFormItem {
   return {
-    id: crypto.randomUUID(),
+    id: createClientId(),
     medicineName: '',
     medicineCode: '',
     quantity: '',
