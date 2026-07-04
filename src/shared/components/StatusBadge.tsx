@@ -1,12 +1,8 @@
-// type StatusBadgeProps = {
-//   label: string;
-//   tone: 'success' | 'warning' | 'danger' | 'neutral';
-// };
-
-// export function StatusBadge({ label, tone }: StatusBadgeProps) {
-//   return <span className={`status-badge status-badge--${tone}`}>{label}</span>;
-// }
-
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Wesley Cordeiro de Araujo
+ * See NOTICE for additional attribution and origin notices.
+ */
 
 type StatusBadgeProps = {
   label: string;

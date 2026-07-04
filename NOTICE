@@ -1,114 +1,523 @@
 MedSupply Relay PWA - Humanitarian Open Source Notice
 SPDX-License-Identifier: AGPL-3.0-or-later
 
-Copyright (C) 2026 Wesley Cordeiro de Araujo.
+Copyright (C) 2026 Wesley Cordeiro de Araujo
 
-Project: MedSupply Relay - Emergency MVP
+Project: MedSupply Relay
+Project Type: Humanitarian Emergency Coordination MVP
 Frontend Project: med-supply-relay-pwa
 
-Original Author and Rights Holder:
+===============================================================================
+ORIGINAL AUTHORSHIP
+===============================================================================
+
+Original Author and Copyright Holder:
+
 Wesley Cordeiro de Araujo
-Analista de Sistemas .NET Core com ênfase em arquitetura de projetos
 
-LinkedIn: https://www.linkedin.com/in/aisentinelx/
-GitHub: https://github.com/wcaraujogithub
+Professional identification:
+Analista de Sistemas .NET Core com ênfase em Arquitetura de Projetos
 
-Frontend Scope:
-React, Progressive Web App (PWA), Service Worker, offline-first user
-interface, local browser storage, local cache, synchronization queue,
-queued requests, sync conflict UX, and related frontend assets.
+GitHub:
+https://github.com/wcaraujogithub
 
-Humanitarian Context:
-This frontend is part of Projetos Humanitários Open Source.
+LinkedIn:
+https://www.linkedin.com/in/aisentinelx/
 
-It was created to support emergency response scenarios where hospitals,
-shelters, donors, medical teams, volunteers, and affected communities may
-have unstable or unavailable internet access.
+Contact:
+analistasistemasnet@gmail.com
 
-The initial humanitarian motivation includes support for people affected by
-the earthquake crisis in Venezuela, where hospitals may be damaged and
-medical supplies may be distributed across shelters, donors, support centers,
-and emergency teams.
+Wesley Cordeiro de Araujo is the original author of the original
+MedSupply Relay project and of the original MedSupply Relay PWA material
+released by him under the GNU Affero General Public License version 3 or
+later.
 
-Offline-First Purpose:
-The purpose is to allow shelters, donors, hospitals, and medical teams to
-continue recording medical supply offers and urgent demands while offline,
-and to synchronize the data with the MedSupply Relay backend when internet
-access returns.
-
-MVP User Flow:
-- Supply screen: shelters and donors register available medicines and supplies.
-- Demand screen: hospitals and medical teams register urgent needs.
-- Offline mode: users continue entering essential information without internet.
-- Sync mode: pending records are synchronized when connectivity is restored.
-- Matching result: the system shows matches between supply and demand.
-- Reservation flow: teams reserve stock before pickup to avoid double allocation.
-- Export flow: coordination can export TXT/CSV contingency files.
-
-Acceptance Criterion:
-If Hospital Y needs Paracetamol
-And Shelter X has Paracetamol
-Then the system returns a simple match:
-"Shelter X has the Paracetamol that Hospital Y needs."
-
-License:
-This frontend is free and open source software licensed under the GNU Affero
-General Public License version 3 or later (AGPL-3.0-or-later).
-
-You may use, study, copy, modify, distribute, and deploy this frontend under
-the terms of the AGPL-3.0-or-later.
-
-Important Protection of Authorship:
 Open source does not mean public domain.
 
-The original authorship, copyright notices, license notices, and attribution
-to Wesley Cordeiro de Araujo must be preserved in copies, forks, modified
-versions, public deployments, app builds, documentation, and redistributions,
-as required by the AGPL-3.0-or-later and applicable copyright law.
+The fact that this software may be used, studied, copied, modified,
+distributed, or deployed under the GNU AGPL does not transfer the original
+authorship of the original MedSupply Relay material to another person,
+company, institution, team, or organization.
 
-No person, company, institution, team, or organization may falsely claim to be
-the original author of this frontend, remove the copyright notice, remove this
-license notice, or misrepresent the origin of the project.
+===============================================================================
+PROJECT PURPOSE
+===============================================================================
 
-Network and PWA Source Code Requirement:
-Because this frontend is expected to operate as a web application and PWA, any
-modified version made available to users over a network must provide access to
-the corresponding source code under the same AGPL-3.0-or-later terms.
+MedSupply Relay PWA is a humanitarian, offline-first emergency coordination
+frontend designed to help connect available medicine supply with urgent
+medicine demand.
 
-This includes modified React code, Service Worker code, offline
-synchronization logic, cache strategies, local storage logic, UI flows, build
-scripts, and frontend configuration required to build and operate the modified
-version.
+The primary operational goal is:
 
-Third-Party Dependencies:
-React, build tools, npm packages, browser APIs, icons, fonts, and other
-third-party dependencies remain governed by their own licenses.
+Know where medicines are available and who urgently needs them.
 
-All third-party license notices must be preserved as required by their
-respective licenses.
+The frontend was created for emergency scenarios where medical resources may
+be fragmented across:
 
-No Medical Warranty:
-This frontend is intended to support humanitarian logistics and information
-coordination.
+- hospitals;
+- shelters;
+- medical posts;
+- warehouses;
+- collection points;
+- NGOs;
+- mobile units;
+- donors;
+- humanitarian support centers.
 
-It is not a certified medical device, clinical decision system, emergency
-dispatch system, inventory audit system, or regulatory compliance product.
+The initial humanitarian motivation includes emergency support scenarios
+affecting communities in Venezuela.
 
-This software is provided "as is", without warranty of any kind, express or
-implied, including but not limited to warranties of merchantability, fitness
-for a particular purpose, non-infringement, availability, accuracy, security,
-offline durability, data recovery, synchronization success, or suitability for
-emergency, medical, clinical, legal, regulatory, or commercial use.
+The project was designed with unstable infrastructure in mind, including:
 
-Data Responsibility:
-Offline data may depend on browser storage, device state, cache behavior,
-available disk space, user permissions, and later synchronization with backend
-services.
+- unstable 2G/3G connectivity;
+- temporary internet outages;
+- power interruptions;
+- low-end or older mobile devices;
+- emergency teams operating under pressure;
+- limited centralized logistics coordination.
 
-Users and deployers are responsible for validating data, protecting sensitive
-information, handling conflicts, backing up critical records, and complying
-with applicable privacy, health, humanitarian, and data protection laws.
+===============================================================================
+FRONTEND SCOPE
+===============================================================================
 
-Full License Text:
-The full legal text of the GNU Affero General Public License version 3 must be
-included in the LICENSE file distributed with this frontend.
+The original MedSupply Relay PWA frontend scope includes, among other
+implemented components:
+
+- React user interface;
+- TypeScript source code;
+- Vite build configuration;
+- Progressive Web App behavior;
+- Service Worker logic;
+- offline-first user flows;
+- IndexedDB local persistence;
+- Dexie database integration;
+- local device identification;
+- offline medicine supply registration;
+- offline medicine demand registration;
+- synchronization queue logic;
+- manual synchronization;
+- automatic synchronization triggers;
+- local synchronization batches;
+- local synchronization logs;
+- synchronization conflict and failure UX;
+- rejected item visibility;
+- duplicate synchronization visibility;
+- manual retry of failed records;
+- local discard workflow for failed records;
+- Spanish and Portuguese internationalization;
+- medicine supply and demand match visualization;
+- recommendation score presentation;
+- reservation user experience;
+- reservation status workflow;
+- contingency TXT/CSV export access;
+- static help documentation;
+- humanitarian guidance;
+- license and authorship notices;
+- related frontend source code, scripts, configuration, and assets.
+
+This NOTICE applies to the original MedSupply Relay PWA material released by
+the original copyright holder, except where a file or third-party component
+states a different copyright holder or license.
+
+===============================================================================
+HUMANITARIAN CONTEXT
+===============================================================================
+
+MedSupply Relay is part of a humanitarian open source initiative.
+
+The project was created to support emergency logistics and information
+coordination where hospitals, shelters, volunteers, donors, medical teams,
+and affected communities may have unstable or unavailable internet access.
+
+Medicine supply may exist in one location while an urgent demand exists in
+another location.
+
+The purpose of the project is to reduce the information gap between those
+points.
+
+The application is intentionally focused on a narrow emergency workflow:
+
+1. Register available medicine supply.
+2. Register urgent medicine demand.
+3. Continue registering information while offline.
+4. Synchronize records when connectivity becomes available.
+5. Review compatible supply and demand matches.
+6. Reserve available stock before pickup.
+7. Track medicine movement through the operational reservation flow.
+8. Support contingency coordination through TXT and CSV exports.
+
+The project is not intended to become a full hospital management platform.
+
+In an emergency, simplicity is a feature.
+
+===============================================================================
+OFFLINE-FIRST PURPOSE
+===============================================================================
+
+The MedSupply Relay PWA is designed to allow emergency users to continue
+recording essential information when internet connectivity is unavailable.
+
+Local application data may include:
+
+- relief locations;
+- medicine supply items;
+- medicine demand items;
+- synchronization batches;
+- synchronization logs.
+
+When connectivity and the MedSupply Relay API become available, pending local
+records may be synchronized with the backend.
+
+Real shared-stock reservations require backend availability because a
+reservation affects stock availability shared between operational teams.
+
+===============================================================================
+MVP OPERATIONAL FLOW
+===============================================================================
+
+Supply registration:
+
+Shelters, warehouses, collection points, donors, NGOs, mobile units, and
+support teams may register available medicines and supplies.
+
+Demand registration:
+
+Hospitals, medical posts, shelters, mobile medical units, and emergency teams
+may register urgent medicine demands.
+
+Offline mode:
+
+Users may continue recording essential supply and demand information without
+an active API connection.
+
+Synchronization:
+
+Pending records may be sent to the MedSupply Relay backend when connectivity
+returns.
+
+Matching:
+
+The system may display compatible opportunities between open medicine demand
+and available medicine supply.
+
+Reservation:
+
+Operational teams may reserve currently free stock before pickup to reduce
+double allocation.
+
+The normal reservation workflow is:
+
+Pending -> Confirmed -> In Transit -> Delivered
+
+Contingency export:
+
+Coordination teams may access TXT and CSV match exports for low-infrastructure
+operational communication.
+
+===============================================================================
+ORIGINAL MVP ACCEPTANCE PRINCIPLE
+===============================================================================
+
+A simplified representation of the original operational objective is:
+
+If Hospital Y needs Paracetamol
+and Shelter X has compatible available Paracetamol,
+then the system should be capable of presenting a compatible supply and
+demand opportunity between those locations.
+
+The current implementation includes additional stock, unit, status,
+reservation, quantity, priority, and compatibility rules.
+
+===============================================================================
+LICENSE
+===============================================================================
+
+MedSupply Relay PWA is free and open source software licensed under the:
+
+GNU Affero General Public License version 3 or later
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+The complete GNU Affero General Public License text is distributed in the:
+
+LICENSE
+
+file accompanying this project.
+
+This NOTICE does not replace the GNU Affero General Public License.
+
+The GNU AGPL is the primary software license governing the covered work.
+
+===============================================================================
+REMOTE NETWORK INTERACTION
+===============================================================================
+
+GNU AGPLv3 Section 13 applies to modified versions that support remote
+interaction through a computer network as described by the license.
+
+Where the conditions of GNU AGPLv3 Section 13 apply, a modified version must
+prominently offer users interacting with that modified version remotely an
+opportunity to receive the Corresponding Source of that version through the
+means required by the GNU AGPLv3.
+
+Deployers and distributors are responsible for reviewing and complying with
+the complete GNU AGPLv3 terms.
+
+The complete legal requirements are defined by the LICENSE file, not by this
+summary.
+
+===============================================================================
+ADDITIONAL TERMS REGARDING ATTRIBUTION AND ORIGIN
+GNU AGPLv3 SECTION 7(b) AND 7(c)
+===============================================================================
+
+For original MedSupply Relay material authored and licensed by
+Wesley Cordeiro de Araujo, the following additional terms are stated pursuant
+to GNU AGPLv3 Section 7(b) and Section 7(c), to the extent permitted by those
+sections and applicable law.
+
+1. PRESERVATION OF ORIGINAL AUTHOR ATTRIBUTION
+
+Reasonable legal notices and original author attribution identifying:
+
+Wesley Cordeiro de Araujo
+
+as the original author of the original MedSupply Relay material must be
+preserved where these Section 7 additional terms apply.
+
+The original authorship notice must not be removed for the purpose of
+misrepresenting the origin of the original MedSupply Relay material.
+
+2. PRESERVATION OF APPLICABLE COPYRIGHT AND LICENSE NOTICES
+
+Applicable copyright notices, GNU AGPL license notices, SPDX license
+identifiers, and notices referring to applicable Section 7 additional terms
+must be kept intact as required by the GNU AGPLv3 and these applicable
+additional terms.
+
+3. NO MISREPRESENTATION OF ORIGIN
+
+The origin of the original MedSupply Relay material must not be
+misrepresented.
+
+No person, company, institution, team, association, foundation, government
+body, or other organization may falsely represent itself or another party as
+the creator or original author of the original MedSupply Relay material.
+
+4. MODIFIED VERSIONS
+
+Modified versions must not falsely represent themselves as the unmodified
+original MedSupply Relay project.
+
+Modified versions must carry appropriate notices identifying that the work
+has been modified and provide a relevant modification date where required by
+the GNU AGPLv3.
+
+A modifier may identify itself as:
+
+- maintainer;
+- contributor;
+- modifier;
+- fork author;
+- derivative project author;
+- deployment operator;
+
+when factually accurate.
+
+Such identification must not falsely replace or misrepresent the authorship
+of the original MedSupply Relay material.
+
+5. SCOPE OF THESE ADDITIONAL TERMS
+
+These additional terms are intended to operate only within the permissions
+for additional terms described by GNU AGPLv3 Section 7(b) and Section 7(c).
+
+They are not intended to remove or reduce rights otherwise granted under the
+GNU AGPLv3.
+
+Where any interpretation of this NOTICE conflicts with the GNU AGPLv3, the
+GNU AGPLv3 license text governs except for valid additional terms expressly
+permitted by GNU AGPLv3 Section 7.
+
+===============================================================================
+COPYRIGHT AND ATTRIBUTION INFORMATION
+===============================================================================
+
+Additional copyright and original authorship information is available in:
+
+COPYRIGHT.md
+
+The following files should be reviewed together:
+
+LICENSE
+NOTICE
+COPYRIGHT.md
+README.md
+
+The LICENSE file contains the complete software license terms.
+
+This NOTICE describes project-specific humanitarian context, original
+authorship information, and applicable attribution and origin notices.
+
+COPYRIGHT.md provides a concise record of original copyright and authorship.
+
+README.md documents the project, architecture, emergency flows, and intended
+use.
+
+===============================================================================
+THIRD-PARTY SOFTWARE AND DEPENDENCIES
+===============================================================================
+
+MedSupply Relay PWA may use third-party software, libraries, development
+tools, browser functionality, or assets.
+
+Examples may include:
+
+- React;
+- React DOM;
+- Vite;
+- TypeScript;
+- Dexie;
+- Sharp;
+- browser APIs;
+- Service Worker APIs;
+- fonts;
+- icons;
+- build tools;
+- npm packages.
+
+Third-party components remain governed by their respective copyright holders
+and licenses.
+
+This NOTICE does not claim original authorship or copyright ownership over
+third-party software.
+
+Third-party copyright, attribution, and license notices must be preserved when
+required by their applicable licenses.
+
+===============================================================================
+NO MEDICAL WARRANTY
+===============================================================================
+
+MedSupply Relay PWA is intended to support humanitarian logistics and
+information coordination.
+
+It is not:
+
+- a certified medical device;
+- a diagnosis system;
+- a prescription system;
+- a clinical decision support system;
+- a medicine authenticity verification system;
+- an emergency dispatch system;
+- an inventory certification system;
+- a hospital management system;
+- a government emergency coordination platform;
+- a regulatory compliance product.
+
+The application does not replace:
+
+- clinical judgment;
+- medical validation;
+- medicine inspection;
+- authorized medical decisions;
+- official emergency coordination;
+- authorized transportation;
+- local humanitarian leadership;
+- government coordination;
+- applicable legal or regulatory obligations.
+
+Recommendations, matches, scores, distances, and suggested quantities are
+operational coordination aids.
+
+They are not clinical recommendations.
+
+===============================================================================
+OFFLINE DATA RESPONSIBILITY
+===============================================================================
+
+Offline data may depend on:
+
+- browser IndexedDB behavior;
+- browser storage policies;
+- available device storage;
+- operating system cleanup behavior;
+- browser permissions;
+- cache state;
+- device condition;
+- user actions;
+- network availability;
+- later backend synchronization.
+
+MedSupply Relay PWA is not a guaranteed permanent offline backup system.
+
+Users, operators, maintainers, and deployers are responsible for:
+
+- validating critical operational information;
+- reviewing failed synchronization records;
+- avoiding unnecessary sensitive information;
+- protecting devices used in humanitarian operations;
+- maintaining appropriate backups when required;
+- complying with applicable privacy and data protection requirements;
+- validating medicine availability before operational action.
+
+No guarantee is made that an offline record has reached the central backend
+until successful synchronization has been confirmed.
+
+===============================================================================
+NO WARRANTY
+===============================================================================
+
+This software is provided under the warranty disclaimer and limitation of
+liability terms of the GNU Affero General Public License.
+
+To the extent permitted by applicable law, no additional guarantee is made
+regarding:
+
+- software availability;
+- uninterrupted operation;
+- information accuracy;
+- stock accuracy;
+- medicine availability;
+- synchronization success;
+- offline storage durability;
+- data recovery;
+- reservation success;
+- recommendation accuracy;
+- geographic distance accuracy;
+- transport success;
+- emergency suitability;
+- medical suitability;
+- security;
+- legal compliance;
+- regulatory compliance.
+
+Users and deployers must evaluate the software for their own operational
+environment.
+
+===============================================================================
+HUMANITARIAN NOTICE
+===============================================================================
+
+MedSupply Relay was created as an emergency-focused humanitarian open source
+project.
+
+Its objective is deliberately simple:
+
+Register medicine supply.
+Register urgent medicine demand.
+Continue operating when connectivity is unstable.
+Synchronize when possible.
+Find compatible supply.
+Protect available stock through reservation.
+Help emergency coordination act faster.
+
+The original project was created by:
+
+Wesley Cordeiro de Araujo
+
+Copyright (C) 2026 Wesley Cordeiro de Araujo
+
+Licensed under GNU AGPL-3.0-or-later.
+
+See LICENSE for the complete license terms.

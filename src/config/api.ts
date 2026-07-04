@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Wesley Cordeiro de Araujo
+ * See NOTICE for additional attribution and origin notices.
+ */
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 export const API_BASE_URL =

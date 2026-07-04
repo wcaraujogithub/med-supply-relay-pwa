@@ -1,3 +1,8 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Wesley Cordeiro de Araujo
+ * See NOTICE for additional attribution and origin notices.
+ */
 import { useState } from 'react';
 import { useI18n } from '../../i18n/I18nProvider';
 import {

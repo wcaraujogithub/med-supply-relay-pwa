@@ -1,29 +1,8 @@
-// import { useEffect, useState } from 'react';
-
-// export function useNetworkStatus(): boolean {
-//   const [isOnline, setIsOnline] = useState<boolean>(() => navigator.onLine);
-
-//   useEffect(() => {
-//     function handleOnline(): void {
-//       setIsOnline(true);
-//     }
-
-//     function handleOffline(): void {
-//       setIsOnline(false);
-//     }
-
-//     window.addEventListener('online', handleOnline);
-//     window.addEventListener('offline', handleOffline);
-
-//     return () => {
-//       window.removeEventListener('online', handleOnline);
-//       window.removeEventListener('offline', handleOffline);
-//     };
-//   }, []);
-
-//   return isOnline;
-// }
-
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Wesley Cordeiro de Araujo
+ * See NOTICE for additional attribution and origin notices.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const CHECK_INTERVAL_SECONDS = 180;

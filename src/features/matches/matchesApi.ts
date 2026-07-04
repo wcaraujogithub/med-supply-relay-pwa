@@ -1,3 +1,9 @@
+
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * Copyright (C) 2026 Wesley Cordeiro de Araujo
+ * See NOTICE for additional attribution and origin notices.
+ */
 import { API_ENDPOINTS } from '../../config/api';
 import type {
   MatchFilters,
