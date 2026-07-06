@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wcaraujogithub/MedSupplyRelay.git"
+    "url": "git+https://github.com/wcaraujogithub/med-supply-relay-pwa.git"
   },
-  "homepage": "https://github.com/wcaraujogithub/MedSupplyRelay",
+  "homepage": "https://medrelay.pages.dev",
   "bugs": {
-    "url": "https://github.com/wcaraujogithub/MedSupplyRelay/issues"
+    "url": "https://github.com/wcaraujogithub/med-supply-relay-pwa/issues"
   },
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -25,18 +25,18 @@
     "icons": "node scripts/generate-pwa-icons.mjs"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "dexie": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "typescript": "latest",
-    "vite": "latest"
+    "dexie": "^4.4.4",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
+    "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
     "esbuild": "^0.28.1",
-    "sharp": "latest"
+    "sharp": "^0.35.3",
+    "typescript": "~6.0.3",
+    "vite": "^8.1.2"
   }
 }
