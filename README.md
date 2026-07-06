@@ -1,11 +1,18 @@
 # MedSupply Relay PWA
 
-**MedSupply Relay PWA** is the offline-first frontend of **MedSupply Relay**, a humanitarian emergency coordination tool designed to help connect medicine supply with urgent medicine demand in unstable connectivity scenarios.
+> **MedSupply Relay — Humanitarian Open Source Project**
 
-> Know where medicines are available and who urgently needs them.
+The public reference deployment is presented as the **MedSupply Relay Community Pilot**.
 
-**Original author:** Wesley Cordeiro de Araujo  
-**License:** GNU AGPL-3.0-or-later  
+The Community Pilot is not an official emergency service and is not affiliated with governments, hospitals, international organizations, or emergency response authorities unless expressly stated.
+
+Data in the public pilot is not officially verified.
+
+Do not register patient names, diagnoses, medical histories, personal documents, or sensitive clinical information in free-text fields.
+
+Original author: **Wesley Cordeiro de Araujo**  
+License: **GNU AGPL-3.0-or-later**
+
 **Frontend project:** `med-supply-relay-pwa`
 
 ---

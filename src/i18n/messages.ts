@@ -451,6 +451,7 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
 'license.open': 'Licencia',
 'license.title': 'Licencia humanitaria open source',
 'license.subtitle': 'MedSupply Relay es software libre para uso humanitario, con copyleft fuerte.',
+'license.subtitle1': 'MedSupply Relay es un Proyecto Humanitario de Código Abierto. La instancia pública disponible en medrelay.pages.dev se ofrece como Piloto Comunitario y despliegue público de referencia. No es un servicio oficial de emergencia y los datos registrados en esta instancia no son verificados oficialmente.',
 'license.accept': 'Entiendo y continuar',
 'license.close': 'Cerrar',
 'license.showAgain': 'Mostrar este aviso al abrir',
@@ -475,6 +476,23 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
 'syncIssues.kind.duplicate': 'DUPLICADO',
 'syncIssues.kind.warning': 'AVISO',
 'syncIssues.kind.info': 'INFO',
+
+'pilot.badge': 'PILOTO COMUNITARIO',
+'pilot.projectType': 'Proyecto humanitario de código abierto',
+'pilot.title': 'Instancia pública comunitaria de referencia',
+'pilot.description':
+  'Esta instancia pública permite probar, demostrar y mejorar MedSupply Relay junto con la comunidad. Los datos publicados aquí no son verificados oficialmente.',
+'pilot.notOfficialTitle': 'No es un servicio oficial de emergencia.',
+'pilot.notOfficialDescription':
+  'MedSupply Relay no representa a gobiernos, hospitales, organizaciones internacionales ni autoridades de respuesta a emergencias, salvo indicación expresa.',
+'pilot.dataWarningTitle': 'No registre datos sensibles de pacientes.',
+'pilot.dataWarningDescription':
+  'No incluya nombres de pacientes, diagnósticos, historiales médicos, documentos personales ni otra información clínica sensible en campos de texto libre.',
+'pilot.viewSource': 'Ver código fuente',
+
+'dataSafety.title': 'Proteja los datos de las personas',
+'dataSafety.description':
+  'Registre únicamente información logística. No escriba nombres de pacientes, diagnósticos, historiales médicos ni datos clínicos sensibles.',
   
   
 },
@@ -921,6 +939,7 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
 'license.open': 'Licença',
 'license.title': 'Licença humanitária open source',
 'license.subtitle': 'MedSupply Relay é software livre para uso humanitário, com copyleft forte.',
+'license.subtitle1': 'O MedSupply Relay é um Projeto Humanitário Open Source. A instância pública disponível em medrelay.pages.dev é oferecida como Piloto Comunitário e implantação pública de referência. Não é um serviço oficial de emergência e os dados registrados nesta instância não são oficialmente verificados.',
 'license.accept': 'Entendi e continuar',
 'license.close': 'Fechar',
 'license.showAgain': 'Mostrar este aviso ao abrir',
@@ -948,5 +967,21 @@ export const messages: Record<AppLanguage, Record<string, string>> = {
 'syncIssues.kind.warning': 'AVISO',
 'syncIssues.kind.info': 'INFO',
 
+'pilot.badge': 'PILOTO COMUNITÁRIO',
+'pilot.projectType': 'Projeto humanitário open source',
+'pilot.title': 'Instância pública comunitária de referência',
+'pilot.description':
+  'Esta instância pública permite testar, demonstrar e melhorar o MedSupply Relay junto com a comunidade. Os dados publicados aqui não são oficialmente verificados.',
+'pilot.notOfficialTitle': 'Não é um serviço oficial de emergência.',
+'pilot.notOfficialDescription':
+  'O MedSupply Relay não representa governos, hospitais, organizações internacionais ou autoridades de resposta a emergências, salvo quando expressamente informado.',
+'pilot.dataWarningTitle': 'Não registre dados sensíveis de pacientes.',
+'pilot.dataWarningDescription':
+  'Não inclua nomes de pacientes, diagnósticos, históricos médicos, documentos pessoais ou outras informações clínicas sensíveis nos campos de texto livre.',
+'pilot.viewSource': 'Ver código-fonte',
+
+'dataSafety.title': 'Proteja os dados das pessoas',
+'dataSafety.description':
+  'Registre somente informações logísticas. Não escreva nomes de pacientes, diagnósticos, históricos médicos ou dados clínicos sensíveis.',
   }
 };

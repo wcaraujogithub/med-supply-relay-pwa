@@ -2787,3 +2787,117 @@ a {
     grid-row: 1;
   }
 }
+
+
+.community-pilot-notice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(14, 116, 144, 0.12),
+      rgba(15, 23, 42, 0.92)
+    );
+}
+
+.community-pilot-notice__badge {
+  align-self: start;
+  padding: 8px 11px;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  border-radius: 999px;
+  color: #7dd3fc;
+  background: rgba(14, 116, 144, 0.18);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.community-pilot-notice__content {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.community-pilot-notice__eyebrow {
+  margin: 0 0 6px;
+  color: #7dd3fc;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.community-pilot-notice h2 {
+  margin: 0 0 8px;
+}
+
+.community-pilot-notice p {
+  margin: 0;
+}
+
+.community-pilot-notice__warnings {
+  display: grid;
+  gap: 10px;
+}
+
+.community-pilot-notice__warnings p {
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.44);
+}
+
+.community-pilot-notice__footer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.community-pilot-notice__footer a {
+  color: #7dd3fc;
+  font-weight: 850;
+}
+
+.data-safety-notice {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  border-radius: 14px;
+  background: rgba(120, 53, 15, 0.14);
+}
+
+.data-safety-notice strong {
+  color: #fcd34d;
+}
+
+.data-safety-notice p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  .community-pilot-notice {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .community-pilot-notice__badge {
+    justify-self: start;
+  }
+
+  .community-pilot-notice__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

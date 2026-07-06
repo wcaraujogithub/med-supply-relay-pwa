@@ -302,9 +302,24 @@ export function DemandFlowModal({ isOpen, onClose }: DemandFlowModalProps) {
         </header>
 
         <form className="emergency-form emergency-form--simplified" onSubmit={handleSubmit}>
-          <p className="emergency-helper emergency-helper--danger">
+
+
+            <div className="data-safety-notice">
+          <strong>
+            {t('dataSafety.title')}
+          </strong>
+
+          <p>
+            {t('dataSafety.description')}
+          </p>
+
+             <p className="emergency-helper emergency-helper--danger">
             {t('demand.helper')}
           </p>
+        </div>
+  
+
+       
 
           <fieldset>
             <legend>{t('demand.quickSection')}</legend>

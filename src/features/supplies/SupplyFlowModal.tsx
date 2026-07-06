@@ -266,6 +266,7 @@ export function SupplyFlowModal({ isOpen, onClose }: SupplyFlowModalProps) {
         aria-modal="true"
         aria-labelledby="supply-flow-title"
       >
+        
         <header className="modal-header">
           <div>
             <p className="eyebrow">{t('supply.eyebrow')}</p>
@@ -284,7 +285,22 @@ export function SupplyFlowModal({ isOpen, onClose }: SupplyFlowModalProps) {
         </header>
 
         <form className="emergency-form emergency-form--simplified" onSubmit={handleSubmit}>
-          <p className="emergency-helper">{t('supply.helper')}</p>
+
+<div className="data-safety-notice">
+            <strong>
+              {t('dataSafety.title')}
+            </strong>
+
+            <p>
+              {t('dataSafety.description')}
+            </p>
+
+                <p className="emergency-helper"
+          >{t('supply.helper')}
+          </p>
+          </div>
+
+      
 
           <fieldset>
             <legend>{t('supply.quickSection')}</legend>

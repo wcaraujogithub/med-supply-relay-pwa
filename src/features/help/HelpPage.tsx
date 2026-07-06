@@ -73,6 +73,30 @@ export function HelpPage({ onBack }: HelpPageProps) {
           {t('help.back')}
         </button>
       </header>
+      
+      <section className="help-section">
+        <h2>
+          {t('pilot.title')}
+        </h2>
+
+        <p>
+          {t('pilot.description')}
+        </p>
+
+        <p>
+          <strong>
+            {t('pilot.notOfficialTitle')}
+          </strong>{' '}
+          {t('pilot.notOfficialDescription')}
+        </p>
+
+        <p>
+          <strong>
+            {t('pilot.dataWarningTitle')}
+          </strong>{' '}
+          {t('pilot.dataWarningDescription')}
+        </p>
+      </section>
 
       <section className="help-section">
         <h3>{t('help.sectionFlow')}</h3>

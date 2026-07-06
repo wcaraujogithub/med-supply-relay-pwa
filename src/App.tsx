@@ -21,6 +21,7 @@ import {
   LicenseNoticeModal,
   shouldShowLicenseNotice
 } from './features/license/LicenseNoticeModal';
+import { CommunityPilotNotice } from './shared/components/CommunityPilotNotice';
 
 
 type AppView = 'home' | 'operations' | 'help';
@@ -186,6 +187,8 @@ if (currentView === 'help') {
           )}
         </div>
       </section>
+<br/>
+<CommunityPilotNotice />
 
 
  <section className="contingency-panel">
@@ -222,7 +225,12 @@ if (currentView === 'help') {
           </button>
         </div>
       </section>
+
+
 <br/>
+
+
+
       <OperatorSettingsPanel />
 
       <section className="action-grid" aria-label="Ações principais">
