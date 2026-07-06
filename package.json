@@ -11,7 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/wcaraujogithub/MedSupplyRelay.git"
   },
-   "homepage": "https://github.com/wcaraujogithub/MedSupplyRelay",
+  "homepage": "https://github.com/wcaraujogithub/MedSupplyRelay",
   "bugs": {
     "url": "https://github.com/wcaraujogithub/MedSupplyRelay/issues"
   },
@@ -27,12 +27,14 @@
   "dependencies": {
     "@vitejs/plugin-react": "latest",
     "dexie": "latest",
-    "vite": "latest",
-    "typescript": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "typescript": "latest",
+    "vite": "latest"
   },
   "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "sharp": "latest"
   }
 }
